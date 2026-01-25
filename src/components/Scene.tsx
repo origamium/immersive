@@ -2,18 +2,30 @@ import { OrbitControls } from "@react-three/drei"
 import { Speaker } from "./Speaker"
 import { Listener } from "./Listener"
 import { Room } from "./Room"
+import { SoundObject } from "./SoundObject"
 import {
   type SpeakerConfig,
-  polarToCartesian,
-  getSpeakerRotation,
+  sphericalToCartesian,
+  getSpeakerRotationY,
+  isCeilingSpeaker,
 } from "../configs/speakerConfigs"
+
+// Sound object colors
+const soundColors = [
+  "#ff6b6b",
+  "#4ecdc4",
+  "#ffe66d",
+  "#95e1d3",
+  "#f38181",
+  "#aa96da",
+]
 
 interface SceneProps {
   speakers: SpeakerConfig[]
-  activeSpeakers: string[]
+  soundObjectCount: number
 }
 
-export const Scene = ({ speakers, activeSpeakers }: SceneProps) => {
+export const Scene = ({ speakers, soundObjectCount }: SceneProps) => {
   return (
     <>
       {/* Lighting */}
@@ -39,20 +51,28 @@ export const Scene = ({ speakers, activeSpeakers }: SceneProps) => {
 
       {/* Speakers */}
       {speakers.map((speaker) => {
-        const [x, z] = polarToCartesian(speaker.angle, speaker.distance)
-        const rotation = getSpeakerRotation(speaker.angle)
+        const position = sphericalToCartesian(speaker.angle, speaker.elevation, speaker.distance)
+        const rotationY = getSpeakerRotationY(speaker.angle)
+        const ceiling = isCeilingSpeaker(speaker)
 
         return (
           <Speaker
             key={speaker.id}
-            position={[x, speaker.height, z]}
-            rotation={rotation}
+            position={position}
+            rotationY={rotationY}
             label={speaker.label}
             color={speaker.color}
-            isActive={activeSpeakers.includes(speaker.id)}
+            angle={speaker.angle}
+            elevation={speaker.elevation}
+            isCeiling={ceiling}
           />
         )
       })}
+
+      {/* Sound Objects */}
+      {Array.from({ length: soundObjectCount }, (_, i) => (
+        <SoundObject key={i} id={i} color={soundColors[i % soundColors.length]} />
+      ))}
     </>
   )
 }

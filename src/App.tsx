@@ -2,23 +2,18 @@ import { useState, useCallback } from "react"
 import { Canvas } from "@react-three/fiber"
 import { Scene } from "./components/Scene"
 import { ControlPanel } from "./components/ControlPanel"
-import { config7ch } from "./configs/speakerConfigs"
+import { surroundConfigs, type SurroundConfig } from "./configs/speakerConfigs"
 
 export const App = () => {
-  const [activeSpeakers, setActiveSpeakers] = useState<string[]>([])
+  const [selectedConfig, setSelectedConfig] = useState<SurroundConfig>(surroundConfigs[0])
+  const [soundObjectCount, setSoundObjectCount] = useState(1)
 
-  const handleToggleSpeaker = useCallback((id: string) => {
-    setActiveSpeakers((prev) =>
-      prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]
-    )
+  const handleConfigChange = useCallback((config: SurroundConfig) => {
+    setSelectedConfig(config)
   }, [])
 
-  const handleClearAll = useCallback(() => {
-    setActiveSpeakers([])
-  }, [])
-
-  const handleSelectAll = useCallback(() => {
-    setActiveSpeakers(config7ch.map((s) => s.id))
+  const handleSoundObjectCountChange = useCallback((count: number) => {
+    setSoundObjectCount(count)
   }, [])
 
   return (
@@ -26,17 +21,16 @@ export const App = () => {
       <Canvas
         camera={{ position: [0, 6, 6], fov: 50 }}
         className="bg-gray-900"
-        frameloop="demand"
       >
-        <Scene speakers={config7ch} activeSpeakers={activeSpeakers} />
+        <Scene speakers={selectedConfig.speakers} soundObjectCount={soundObjectCount} />
       </Canvas>
 
       <ControlPanel
-        speakers={config7ch}
-        activeSpeakers={activeSpeakers}
-        onToggleSpeaker={handleToggleSpeaker}
-        onClearAll={handleClearAll}
-        onSelectAll={handleSelectAll}
+        configs={surroundConfigs}
+        selectedConfig={selectedConfig}
+        onConfigChange={handleConfigChange}
+        soundObjectCount={soundObjectCount}
+        onSoundObjectCountChange={handleSoundObjectCountChange}
       />
 
       <div className="absolute bottom-4 left-4 bg-white/90 p-3 rounded-lg shadow-lg text-sm">
