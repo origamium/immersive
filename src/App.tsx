@@ -26,6 +26,7 @@ export const App = () => {
       <Canvas
         camera={{ position: [0, 6, 6], fov: 50 }}
         className="bg-gray-900"
+        frameloop="demand"
       >
         <Scene speakers={config7ch} activeSpeakers={activeSpeakers} />
       </Canvas>

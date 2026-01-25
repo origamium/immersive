@@ -79,8 +79,9 @@ export const polarToCartesian = (
   return [x, z]
 }
 
-// Calculate speaker rotation to face the center
+// Calculate speaker rotation to face the center (listener position)
 export const getSpeakerRotation = (angleDegrees: number): [number, number, number] => {
-  const angleRadians = (angleDegrees * Math.PI) / 180 + Math.PI
+  // Speaker faces toward center: rotate by negative of its position angle
+  const angleRadians = (-angleDegrees * Math.PI) / 180
   return [0, angleRadians, 0]
 }
