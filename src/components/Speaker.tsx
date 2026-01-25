@@ -12,12 +12,16 @@ interface SpeakerProps {
   angle: number
   elevation: number
   isCeiling: boolean
+  hasCeilingSpeakers: boolean
 }
 
 // Calculate intensity for this speaker based on sound positions
+// Supports downmixing when ceiling speakers are not available
 const calculateIntensity = (
   speakerAngle: number,
   speakerElevation: number,
+  isCeiling: boolean,
+  hasCeilingSpeakers: boolean,
   soundPositions: [number, number, number][]
 ): number => {
   if (soundPositions.length === 0) return 0
@@ -43,12 +47,30 @@ const calculateIntensity = (
     // Elevation difference
     const elevationDiff = soundElevation - speakerElevation
 
-    // Convert to intensity (closer angle = higher intensity)
+    // Spread values for intensity calculation
     const horizontalSpread = 60
-    const verticalSpread = 45
+    let verticalSpread = 45
+
+    // Downmix: If no ceiling speakers and this is a floor speaker,
+    // reduce the impact of elevation difference (sound from above goes to floor speakers)
+    if (!hasCeilingSpeakers && !isCeiling) {
+      // Widen vertical spread significantly so floor speakers catch elevated sounds
+      verticalSpread = 120
+    }
+
     const normalizedAngleDiff = Math.abs(angleDiff) / horizontalSpread
     const normalizedElevationDiff = Math.abs(elevationDiff) / verticalSpread
-    const angleIntensity = Math.max(0, 1 - Math.sqrt(normalizedAngleDiff ** 2 + normalizedElevationDiff ** 2))
+
+    // Calculate base intensity from angular proximity
+    let angleIntensity = Math.max(0, 1 - Math.sqrt(normalizedAngleDiff ** 2 + normalizedElevationDiff ** 2))
+
+    // Fallback: ensure speakers always have some minimum response
+    // based on horizontal angle alone (for when sound is far from all speakers)
+    const horizontalOnlyIntensity = Math.max(0, 1 - normalizedAngleDiff)
+    const minIntensity = horizontalOnlyIntensity * 0.3 // 30% of horizontal-only calculation
+
+    // Use the higher of the two intensities
+    angleIntensity = Math.max(angleIntensity, minIntensity)
 
     totalIntensity += angleIntensity * distanceFactor
   }
@@ -64,6 +86,7 @@ export const Speaker = ({
   angle,
   elevation,
   isCeiling,
+  hasCeilingSpeakers,
 }: SpeakerProps) => {
   const meshRef = useRef<Mesh>(null)
   const materialRef = useRef<MeshStandardMaterial>(null)
@@ -78,7 +101,7 @@ export const Speaker = ({
   // Update material emissive and glow sphere based on intensity
   useFrame(() => {
     const positions = soundPositionStore.getAllPositions()
-    const intensity = calculateIntensity(angle, elevation, positions)
+    const intensity = calculateIntensity(angle, elevation, isCeiling, hasCeilingSpeakers, positions)
 
     if (materialRef.current) {
       materialRef.current.emissive.setHex(0xff6b6b)

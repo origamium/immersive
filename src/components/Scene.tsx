@@ -27,6 +27,9 @@ interface SceneProps {
 }
 
 export const Scene = ({ speakers, soundObjectCount }: SceneProps) => {
+  // Check if this configuration has ceiling speakers
+  const hasCeilingSpeakers = speakers.some((s) => isCeilingSpeaker(s))
+
   return (
     <>
       {/* Lighting */}
@@ -69,6 +72,7 @@ export const Scene = ({ speakers, soundObjectCount }: SceneProps) => {
             angle={speaker.angle}
             elevation={speaker.elevation}
             isCeiling={ceiling}
+            hasCeilingSpeakers={hasCeilingSpeakers}
           />
         )
       })}
