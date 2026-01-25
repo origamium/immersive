@@ -3,6 +3,7 @@ import { Speaker } from "./Speaker"
 import { Listener } from "./Listener"
 import { Room } from "./Room"
 import { SoundObject } from "./SoundObject"
+import { TV } from "./TV"
 import {
   type SpeakerConfig,
   sphericalToCartesian,
@@ -45,6 +46,9 @@ export const Scene = ({ speakers, soundObjectCount }: SceneProps) => {
 
       {/* Room */}
       <Room />
+
+      {/* TV at front (above center speaker position) */}
+      <TV position={[0, 0.7, -2.5]} />
 
       {/* Listener at center */}
       <Listener />

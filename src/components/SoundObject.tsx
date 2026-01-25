@@ -25,11 +25,11 @@ const generateTrajectoryParams = (id: number) => {
     phaseZ: random(4) * Math.PI * 2,
     radiusX: 1.2 + random(5) * 1.0,
     radiusZ: 1.2 + random(6) * 1.0,
-    // Vertical movement
-    freqY: 0.1 + random(7) * 0.2,
+    // Vertical movement - large enough to reach ceiling speakers
+    freqY: 0.15 + random(7) * 0.2,
     phaseY: random(8) * Math.PI * 2,
-    baseY: 0.3,
-    amplitudeY: 0.2,
+    baseY: 0.8,
+    amplitudeY: 1.0 + random(9) * 0.5,
   }
 }
 

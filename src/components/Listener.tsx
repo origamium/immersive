@@ -14,8 +14,8 @@ export const Listener = () => {
         <meshStandardMaterial color="#4a90d9" />
       </mesh>
 
-      {/* Direction indicator (facing forward) */}
-      <mesh position={[0, 0.15, 0.2]} rotation={[Math.PI / 2, 0, 0]}>
+      {/* Direction indicator (facing forward = -Z direction) */}
+      <mesh position={[0, 0.15, -0.2]} rotation={[-Math.PI / 2, 0, 0]}>
         <coneGeometry args={[0.05, 0.15, 8]} />
         <meshStandardMaterial color="#ff9500" />
       </mesh>
