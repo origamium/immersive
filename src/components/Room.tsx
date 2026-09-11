@@ -1,4 +1,4 @@
-import { Grid } from "@react-three/drei"
+import { Grid } from "@react-three/drei";
 
 export const Room = () => {
   return (
@@ -23,5 +23,5 @@ export const Room = () => {
         infiniteGrid={false}
       />
     </group>
-  )
-}
+  );
+};

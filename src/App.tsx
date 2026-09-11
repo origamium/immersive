@@ -1,28 +1,30 @@
-import { useState, useCallback } from "react"
-import { Canvas } from "@react-three/fiber"
-import { Scene } from "./components/Scene"
-import { ControlPanel } from "./components/ControlPanel"
-import { surroundConfigs, type SurroundConfig } from "./configs/speakerConfigs"
+import { Canvas } from "@react-three/fiber";
+import { useCallback, useState } from "react";
+import { ControlPanel } from "./components/ControlPanel";
+import { Scene } from "./components/Scene";
+import { type SurroundConfig, surroundConfigs } from "./configs/speakerConfigs";
 
 export const App = () => {
-  const [selectedConfig, setSelectedConfig] = useState<SurroundConfig>(surroundConfigs[0])
-  const [soundObjectCount, setSoundObjectCount] = useState(1)
+  const [selectedConfig, setSelectedConfig] = useState<SurroundConfig>(
+    surroundConfigs[0]
+  );
+  const [soundObjectCount, setSoundObjectCount] = useState(1);
 
   const handleConfigChange = useCallback((config: SurroundConfig) => {
-    setSelectedConfig(config)
-  }, [])
+    setSelectedConfig(config);
+  }, []);
 
   const handleSoundObjectCountChange = useCallback((count: number) => {
-    setSoundObjectCount(count)
-  }, [])
+    setSoundObjectCount(count);
+  }, []);
 
   return (
     <div className="w-screen h-screen relative">
-      <Canvas
-        camera={{ position: [0, 6, 6], fov: 50 }}
-        className="bg-gray-900"
-      >
-        <Scene speakers={selectedConfig.speakers} soundObjectCount={soundObjectCount} />
+      <Canvas camera={{ position: [0, 6, 6], fov: 50 }} className="bg-gray-900">
+        <Scene
+          speakers={selectedConfig.speakers}
+          soundObjectCount={soundObjectCount}
+        />
       </Canvas>
 
       <ControlPanel
@@ -39,5 +41,5 @@ export const App = () => {
         </p>
       </div>
     </div>
-  )
-}
+  );
+};

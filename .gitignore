@@ -1,5 +1,8 @@
 # mcp
 .playwright-mcp
+test-results/
+playwright-report/
+acoustic-cache/
 
 # Logs
 logs

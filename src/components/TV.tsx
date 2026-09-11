@@ -1,7 +1,7 @@
-import { Text } from "@react-three/drei"
+import { Text } from "@react-three/drei";
 
 interface TVProps {
-  position: [number, number, number]
+  position: [number, number, number];
 }
 
 export const TV = ({ position }: TVProps) => {
@@ -16,7 +16,11 @@ export const TV = ({ position }: TVProps) => {
       {/* Screen surface (slightly in front) */}
       <mesh position={[0, 0, 0.026]}>
         <planeGeometry args={[1.5, 0.84]} />
-        <meshStandardMaterial color="#2a2a3a" emissive="#1a1a2a" emissiveIntensity={0.3} />
+        <meshStandardMaterial
+          color="#2a2a3a"
+          emissive="#1a1a2a"
+          emissiveIntensity={0.3}
+        />
       </mesh>
 
       {/* TV Stand */}
@@ -42,5 +46,5 @@ export const TV = ({ position }: TVProps) => {
         FRONT
       </Text>
     </group>
-  )
-}
+  );
+};

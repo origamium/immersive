@@ -1,4 +1,4 @@
-import { Sphere } from "@react-three/drei"
+import { Sphere } from "@react-three/drei";
 
 export const Listener = () => {
   return (
@@ -20,5 +20,5 @@ export const Listener = () => {
         <meshStandardMaterial color="#ff9500" />
       </mesh>
     </group>
-  )
-}
+  );
+};

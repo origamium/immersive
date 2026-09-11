@@ -1,15 +1,15 @@
-import { OrbitControls } from "@react-three/drei"
-import { Speaker } from "./Speaker"
-import { Listener } from "./Listener"
-import { Room } from "./Room"
-import { SoundObject } from "./SoundObject"
-import { TV } from "./TV"
+import { OrbitControls } from "@react-three/drei";
 import {
-  type SpeakerConfig,
-  sphericalToCartesian,
   getSpeakerRotationY,
   isCeilingSpeaker,
-} from "../configs/speakerConfigs"
+  type SpeakerConfig,
+  sphericalToCartesian,
+} from "../configs/speakerConfigs";
+import { Listener } from "./Listener";
+import { Room } from "./Room";
+import { SoundObject } from "./SoundObject";
+import { Speaker } from "./Speaker";
+import { TV } from "./TV";
 
 // Sound object colors
 const soundColors = [
@@ -19,16 +19,16 @@ const soundColors = [
   "#95e1d3",
   "#f38181",
   "#aa96da",
-]
+];
 
 interface SceneProps {
-  speakers: SpeakerConfig[]
-  soundObjectCount: number
+  speakers: SpeakerConfig[];
+  soundObjectCount: number;
 }
 
 export const Scene = ({ speakers, soundObjectCount }: SceneProps) => {
   // Check if this configuration has ceiling speakers
-  const hasCeilingSpeakers = speakers.some((s) => isCeilingSpeaker(s))
+  const hasCeilingSpeakers = speakers.some((s) => isCeilingSpeaker(s));
 
   return (
     <>
@@ -58,9 +58,13 @@ export const Scene = ({ speakers, soundObjectCount }: SceneProps) => {
 
       {/* Speakers */}
       {speakers.map((speaker) => {
-        const position = sphericalToCartesian(speaker.angle, speaker.elevation, speaker.distance)
-        const rotationY = getSpeakerRotationY(speaker.angle)
-        const ceiling = isCeilingSpeaker(speaker)
+        const position = sphericalToCartesian(
+          speaker.angle,
+          speaker.elevation,
+          speaker.distance
+        );
+        const rotationY = getSpeakerRotationY(speaker.angle);
+        const ceiling = isCeilingSpeaker(speaker);
 
         return (
           <Speaker
@@ -74,13 +78,18 @@ export const Scene = ({ speakers, soundObjectCount }: SceneProps) => {
             isCeiling={ceiling}
             hasCeilingSpeakers={hasCeilingSpeakers}
           />
-        )
+        );
       })}
 
       {/* Sound Objects */}
       {Array.from({ length: soundObjectCount }, (_, i) => (
-        <SoundObject key={i} id={i} color={soundColors[i % soundColors.length]} />
+        <SoundObject
+          // biome-ignore lint/suspicious/noArrayIndexKey: The index is the permanent identity of an append-only sound slot.
+          key={i}
+          id={i}
+          color={soundColors[i % soundColors.length]}
+        />
       ))}
     </>
-  )
-}
+  );
+};
