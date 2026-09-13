@@ -49,6 +49,15 @@ export interface Calibration {
   splOffsetDB: number | null;
 }
 export interface MeasurementContext {
+  avrBinding?: { receiverId: string; channelMap: Record<string, string> };
+  avrObservation?: {
+    receiverId: string;
+    measurementId: string;
+    before: import("../avr/client").ReceiverState;
+    after?: import("../avr/client").ReceiverState;
+    interrupted: boolean;
+    reason?: string;
+  };
   room: RoomModel;
   profile: PlaybackProfile;
   speakerId: string;

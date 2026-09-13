@@ -1,4 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { CloudAvrClient } from "../avr/client";
+import { acquireAvr } from "../avr/measurement";
 import { Recorder } from "./capture";
 import { createSession, issueCommand, syncCapture } from "./cloud";
 import { putLocal } from "./local";
@@ -56,9 +58,41 @@ export async function runMeasurement(options: {
     leaseTimer: ReturnType<typeof setInterval> | undefined,
     renewal = false;
   let capture: LocalCapture | undefined;
+  let avrGuard: Awaited<ReturnType<typeof acquireAvr>> = null;
+  let avrTimer: ReturnType<typeof setInterval> | undefined;
+  let avrRenewal: Promise<void> | undefined;
+  const finishAvr = async () => {
+    clearInterval(avrTimer);
+    await avrRenewal;
+    if (!avrGuard) return;
+    const observation = await avrGuard.finish();
+    avrGuard = null;
+    if (capture) capture.context.avrObservation = observation;
+    if (observation.interrupted)
+      interrupted = observation.reason ?? "AVR条件が変化しました";
+  };
   try {
     for (let repeat = 0; repeat < context.profile.repeats; repeat++) {
       if (signal.aborted) throw new Error("測定を停止しました");
+      onState(`測定 ${repeat + 1}/${context.profile.repeats} · AVR条件を確認`);
+      avrGuard = await acquireAvr(
+        new CloudAvrClient(client, workspace),
+        context,
+        signal
+      );
+      if (avrGuard)
+        avrTimer = setInterval(() => {
+          if (avrRenewal || !avrGuard || interrupted) return;
+          avrRenewal = avrGuard
+            .renew()
+            .catch((error) => {
+              interrupted =
+                error instanceof Error ? error.message : String(error);
+            })
+            .finally(() => {
+              avrRenewal = undefined;
+            });
+        }, 4000);
       onState(`測定 ${repeat + 1}/${context.profile.repeats} · マイク準備`);
       capture = await recorder.start(context, options.inputId);
       const session = await createSession(client, workspace, capture.context);
@@ -131,6 +165,9 @@ export async function runMeasurement(options: {
       }
       clearInterval(leaseTimer);
       const completed = await recorder.stop();
+      if (completed) capture = { ...completed, cloudSessionId: sid };
+      await finishAvr();
+      if (interrupted) throw new Error(interrupted);
       if (!completed || completed.status !== "complete")
         throw new Error(completed?.reason ?? "録音が完了しませんでした");
       capture = { ...completed, cloudSessionId: sid };
@@ -152,10 +189,17 @@ export async function runMeasurement(options: {
     onState("収録完了 · Macの解析ワーカーが結果を作成します");
   } catch (error) {
     const reason = error instanceof Error ? error.message : String(error);
+    clearInterval(leaseTimer);
+    clearInterval(avrTimer);
+    if (sid) await issueCommand(client, sid, target, "stop").catch(() => {});
     const partial = await recorder.stop(reason);
-    if (partial) {
-      const saved = {
-        ...partial,
+    if (partial) capture = partial;
+    await finishAvr();
+    if (capture) {
+      const saved: LocalCapture = {
+        ...capture,
+        status: "interrupted",
+        reason,
         cloudSessionId: sid ?? capture?.cloudSessionId,
       };
       await putLocal("captures", saved.id, saved);
@@ -164,6 +208,7 @@ export async function runMeasurement(options: {
     throw error;
   } finally {
     clearInterval(leaseTimer);
+    clearInterval(avrTimer);
     if (sid) await issueCommand(client, sid, target, "stop").catch(() => {});
   }
 }

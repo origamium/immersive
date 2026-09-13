@@ -56,10 +56,20 @@ import type {
   MeasurementContext,
 } from "./types";
 import "./acoustics.css";
+const AvrPanel = lazy(() =>
+  import("../avr/AvrPanel").then((m) => ({ default: m.AvrPanel }))
+);
 const Visualizer = lazy(() =>
   import("../App").then((m) => ({ default: m.App }))
 );
-const tabs = ["測定", "解析", "比較・履歴", "部屋・機材", "接続"] as const;
+const tabs = [
+  "測定",
+  "解析",
+  "比較・履歴",
+  "部屋・機材",
+  "AVR",
+  "接続",
+] as const;
 type Tab = (typeof tabs)[number] | "演出";
 const qualityName = {
   verified: "条件検証済み",
@@ -390,7 +400,9 @@ export function AcousticLab() {
               disabled={recording && name !== "測定"}
               onClick={() => setTab(name)}
             >
-              <span className="nav-icon">{["◎", "∿", "≋", "⌑", "⌁"][i]}</span>
+              <span className="nav-icon">
+                {["◎", "∿", "≋", "⌑", "⏻", "⌁"][i]}
+              </span>
               {name}
             </button>
           ))}
@@ -1334,6 +1346,16 @@ export function AcousticLab() {
           )}
           {tab === "部屋・機材" && (
             <RoomPanel context={context} change={setContext} task={task} />
+          )}
+          {tab === "AVR" && (
+            <Suspense fallback={<p>AVRを読み込み中…</p>}>
+              <AvrPanel
+                client={client}
+                workspace={workspace}
+                context={context}
+                onChange={setContext}
+              />
+            </Suspense>
           )}
           {tab === "接続" && (
             <>

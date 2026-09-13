@@ -109,6 +109,35 @@ export function comparisonWarnings(
   b: AnalysisResult
 ): string[] {
   const warnings: string[] = [];
+  for (const result of [a, b]) {
+    if (
+      result.context.avrBinding &&
+      (!result.context.avrObservation?.after ||
+        result.context.avrObservation.interrupted)
+    )
+      warnings.push("AVR条件の検証が未完了または中断しています");
+  }
+  if (
+    a.context.avrBinding?.receiverId !== b.context.avrBinding?.receiverId ||
+    JSON.stringify(a.context.avrBinding?.channelMap) !==
+      JSON.stringify(b.context.avrBinding?.channelMap)
+  )
+    warnings.push("AVRまたは配線の対応が異なります");
+  const settings = (result: AnalysisResult) => {
+    const state = result.context.avrObservation?.before;
+    return state
+      ? {
+          zones: state.zones,
+          channels: state.channels,
+          surround: state.surround,
+          details: state.details,
+        }
+      : null;
+  };
+  if (JSON.stringify(settings(a)) !== JSON.stringify(settings(b)))
+    warnings.push(
+      "記録されたAVR条件が異なります（音量・モード・補正・トリムを確認）"
+    );
   const fields = [
     "microphone",
     "inputGain",

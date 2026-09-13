@@ -116,3 +116,14 @@ test("rejects malformed responses and never fabricates measurements", async ({
     page.getByRole("heading", { name: "まだ測定結果がありません" })
   ).toBeVisible();
 });
+
+test("AVR tab explains Mac setup without inventing a connected receiver", async ({ page }) => {
+  const errors: string[] = [];
+  page.on("pageerror", error => errors.push(error.message));
+  await page.goto("/");
+  await page.getByRole("button", { name: /AVR/, exact: false }).click();
+  await expect(page.getByRole("heading", { name: "AVR Control" })).toBeVisible();
+  await expect(page.getByText(/Mac Companionの「AVR \/ HomeKit」/)).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  expect(errors).toEqual([]);
+});
