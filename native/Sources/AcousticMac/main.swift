@@ -2,9 +2,34 @@ import Foundation
 import AcousticCore
 import AcousticTransport
 import AppKit
+import DenonControl
 
 func cli() async throws {
     let args=Array(CommandLine.arguments.dropFirst())
+    if args.first=="avr",args.count>=2,["serve","mock-serve"].contains(args[1]) {
+        let settings=UserDefaults(suiteName:"app.immersive.acoustic.mac")!
+        let id=args[1]=="mock-serve" ? "00000000-0000-4000-8000-000000000001":settings.string(forKey:"avrReceiverID") ?? UUID().uuidString
+        let http:any DenonHTTP
+        if args[1]=="mock-serve" {http=MockAVR()}
+        else {guard args.count>=3 else{throw CloudError.message("avr serve <private-connection.json>")};let connection=dictionary(try JSONSerialization.jsonObject(with:Data(contentsOf:URL(fileURLWithPath:args[2]))));http=try DenonHTTPTransport(host:connection["host"] as? String ?? "",certificateFingerprint:connection["certificateFingerprint"] as? String)}
+        let directory=FileManager.default.urls(for:.applicationSupportDirectory,in:.userDomainMask)[0].appendingPathComponent("AcousticLab/receivers/\(id)")
+        let controller=try ReceiverController(client:DenonClient(http:http),journalURL:directory.appendingPathComponent("journal.json"))
+        let api=try ReceiverAPI(controller:controller,receiverID:id,testToken:args[1]=="mock-serve" ? ProcessInfo.processInfo.environment["IMMERSIVE_AVR_TEST_TOKEN"]:nil);try api.start()
+        print(args[1]=="mock-serve" ? "SIMULATOR: no hardware. Authenticated API on 127.0.0.1:8765":"AVR service ready on 127.0.0.1:8765; initial traffic is read-only")
+        fflush(stdout)
+        while !Task.isCancelled {_ = await controller.refresh();try await Task.sleep(for:.seconds(5))}
+        api.stop();return
+    }
+    if args.first=="avr",args.count>=2 {
+        guard let token=Keychain.read("avr-loopback").flatMap({String(data:$0,encoding:.utf8)}) else{throw CloudError.message("Mac CompanionでAVRを開始してください")}
+        let path=args[1]=="status" ? "/api/status":args[1]=="snapshot" ? "/api/snapshot":args[1]=="catalog" ? "/api/catalog":"/api/operation"
+        var request=URLRequest(url:URL(string:"http://127.0.0.1:8765"+path)!,timeoutInterval:120)
+        request.setValue("Bearer "+token,forHTTPHeaderField:"Authorization")
+        if path=="/api/operation" {guard args.count>=3 else{throw CloudError.message("avr operation <operation.json>")};request.httpMethod="POST";request.httpBody=try Data(contentsOf:URL(fileURLWithPath:args[2]));request.setValue("application/json",forHTTPHeaderField:"Content-Type")}
+        let (data,response)=try await URLSession.shared.data(for:request)
+        guard (response as? HTTPURLResponse)?.statusCode==200 else{throw CloudError.message(String(decoding:data,as:UTF8.self))}
+        print(String(decoding:data,as:UTF8.self));return
+    }
     if args.first=="generate",args.count>=2 {
         let c=SweepConfiguration();try Wave(sampleRate:c.sampleRate,samples:Stimulus(c).samples).encoded().write(to:URL(fileURLWithPath:args[1]));print("Generated a low-level synchronized sweep. No sound was played.");return
     }
@@ -30,6 +55,10 @@ func cli() async throws {
     print("""
     Acoustic Lab
       (no arguments)                            Open Mac companion
+      avr serve <private-connection.json>        Run AVR service without GUI
+      avr mock-serve                             Explicit simulator; never measurement evidence
+      avr status|snapshot|catalog               Read through the running Mac AVR service
+      avr operation <operation.json>            Authenticated, revision-checked AVR operation
       devices                                   Inspect CoreAudio capabilities
       generate <wav>                            Write a 48 kHz ESS + timing markers
       analyze <ir.wav> <analysis.json>            Analyze imported mono IR

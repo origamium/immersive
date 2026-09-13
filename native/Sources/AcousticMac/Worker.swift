@@ -30,9 +30,15 @@ func makeResult(_ dsp:DSPResult,context:[String:Any],session:String,artifact:Str
     let timing=source=="sweep" && reference != nil && dsp.driftPPM != nil && !unverifiedAsset
     context["timingVerified"]=timing
     if !timing {reasons.append("共通の音響基準がないためチャンネル間の位相・遅延比較は無効")}
-    let invalid=dsp.clippedSamples>0 || (dsp.snrDB ?? 100)<30 || dsp.response.isEmpty
+    let avrBound=context["avrBinding"] is [String:Any],avrObservation=dictionary(context["avrObservation"])
+    let avrInvalid=avrBound && (dictionary(avrObservation["before"])["simulated"] as? Bool == true || avrObservation["interrupted"] as? Bool != false || avrObservation["after"] as? [String:Any] == nil)
+    if avrInvalid {reasons.append("AVR条件の検証が未完了または中断しています")}
+    if !avrBound {reasons.append("AVR自動条件記録なし: アンプ条件は手動申告です")}
+    let invalid=avrInvalid || dsp.clippedSamples>0 || (dsp.snrDB ?? 100)<30 || dsp.response.isEmpty
     let metadataKnown = (context["inputGain"] as? String).map{!$0.isEmpty && $0 != "未確認"} ?? false
-    let verified = !invalid && !unverifiedAsset && source=="sweep" && !points.isEmpty && covered && processingOff && metadataKnown && calibration["orientation"] as? String != "other"
+    let avrUnknown = (dictionary(avrObservation["before"])["unknownConditions"] as? [String] ?? [])
+    if !avrUnknown.isEmpty {reasons.append("AVRに未確認条件があります: "+avrUnknown.joined(separator:" / "))}
+    let verified = avrUnknown.isEmpty && !invalid && !unverifiedAsset && source=="sweep" && !points.isEmpty && covered && processingOff && metadataKnown && calibration["orientation"] as? String != "other"
     var display=[[String:Any]]();let strideSize=max(1,dsp.impulse.count/4000)
     for start in stride(from:0,to:dsp.impulse.count,by:strideSize) {let end=min(dsp.impulse.count,start+strideSize);let peak=(start..<end).max{abs(dsp.impulse[$0])<abs(dsp.impulse[$1])}!;display.append(["seconds":Double(peak)/sampleRate+dsp.timeOriginSeconds,"value":dsp.impulse[peak]])}
     let speaker=context["speakerId"] as? String ?? "IR",date=ISO8601DateFormatter().string(from:Date())

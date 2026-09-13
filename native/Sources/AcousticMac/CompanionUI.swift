@@ -1,6 +1,7 @@
 import AppKit
 import SwiftUI
 import AcousticTransport
+import ServiceManagement
 
 @MainActor final class CompanionModel:ObservableObject {
     @Published var url=UserDefaults.standard.string(forKey:"supabaseURL") ?? ""
@@ -10,6 +11,8 @@ import AcousticTransport
     @Published var code=""
     @Published var status="出力先を確認してから受信を開始してください。"
     @Published var running=false
+    @Published var launchAtLogin=SMAppService.mainApp.status == .enabled
+    func setLaunchAtLogin(_ enabled:Bool) {Task{do{if enabled {try SMAppService.mainApp.register()}else{try await SMAppService.mainApp.unregister()};launchAtLogin=SMAppService.mainApp.status == .enabled;status=SMAppService.mainApp.status == .requiresApproval ? "システム設定のログイン項目で許可してください":"ログイン時の起動設定を更新しました"}catch{status=error.localizedDescription}}}
     @Published var devices=AudioDevice.all().filter{$0.outputChannels>0}
     private var worker:MacWorker?;private var task:Task<Void,Never>?
     func pair() {Task {do {let client=try CloudClient(url:url,key:key);let result=try await client.pair(name:Host.current().localizedName ?? "Mac",kind:"mac");code=result["code"] as? String ?? "";deviceID=result["deviceId"] as? String ?? "";save();status="Webの接続タブでコードを承認してください（10分間有効）。"} catch {status=error.localizedDescription}}}
@@ -19,7 +22,8 @@ import AcousticTransport
 }
 struct CompanionView:View {
     @StateObject private var model=CompanionModel()
-    var body:some View {VStack(alignment:.leading,spacing:18){Text("IMMERSIVE / ACOUSTIC LAB").font(.caption).foregroundStyle(.mint);Text("Mac Companion").font(.largeTitle)
+    @StateObject private var receiver=ReceiverModel()
+    var body:some View {TabView {VStack(alignment:.leading,spacing:18){Text("IMMERSIVE / ACOUSTIC LAB").font(.caption).foregroundStyle(.mint);Text("Mac Companion").font(.largeTitle)
         Text("CoreAudio 再生 · クラウド原音の検証・解析").foregroundStyle(.secondary)
         TextField("Supabase URL",text:$model.url).disabled(model.running)
         SecureField("Publishable key",text:$model.key).disabled(model.running)
@@ -29,11 +33,15 @@ struct CompanionView:View {
         HStack{Button(model.running ? "■ 受信・再生を停止":"受信を開始"){if model.running{model.stop()}else{model.start()}}.buttonStyle(.borderedProminent).tint(model.running ? .red:.mint);Button("デバイスを更新"){model.devices=AudioDevice.all().filter{$0.outputChannels>0}}.disabled(model.running)}
         Text(model.status).font(.callout).textSelection(.enabled).frame(maxWidth:.infinity,alignment:.leading).padding().background(.quaternary,in:RoundedRectangle(cornerRadius:8))
         Text("Macの録音はWebの既定マイク、またはCLIの record コマンドで校正マイクを選べます。High-res PCMは元のレートで保存し、解析条件を記録します。").font(.caption).foregroundStyle(.secondary)
+        Toggle("ログイン時にMac Companionを起動",isOn:Binding(get:{model.launchAtLogin},set:{model.setLaunchAtLogin($0)}))
+        Text("ウィンドウを閉じてもサービスは継続します。終了はメニューバーのImmersiveから選択してください。").font(.caption).foregroundStyle(.secondary)
         Spacer()
-    }.padding(28).frame(minWidth:620,minHeight:550).preferredColorScheme(.dark)}
+    }.padding(28).frame(minWidth:620,minHeight:550).tabItem {Text("音響")}; ReceiverView(model:receiver,cloudURL:model.url,cloudKey:model.key,deviceID:model.deviceID).tabItem {Text("AVR / HomeKit")} }.preferredColorScheme(.dark)}
 }
 @MainActor final class CompanionDelegate:NSObject,NSApplicationDelegate {
     var window:NSWindow?
-    func applicationDidFinishLaunching(_ notification:Notification) {let window=NSWindow(contentRect:NSRect(x:0,y:0,width:660,height:590),styleMask:[.titled,.closable,.miniaturizable,.resizable],backing:.buffered,defer:false);window.title="Immersive Acoustic Lab";window.contentView=NSHostingView(rootView:CompanionView());window.center();window.makeKeyAndOrderFront(nil);self.window=window;NSApp.activate(ignoringOtherApps:true)}
-    func applicationShouldTerminateAfterLastWindowClosed(_ sender:NSApplication)->Bool {true}
+    var statusItem:NSStatusItem?
+    func applicationDidFinishLaunching(_ notification:Notification) {let window=NSWindow(contentRect:NSRect(x:0,y:0,width:660,height:590),styleMask:[.titled,.closable,.miniaturizable,.resizable],backing:.buffered,defer:false);window.title="Immersive Acoustic Lab";window.contentView=NSHostingView(rootView:CompanionView());window.center();window.makeKeyAndOrderFront(nil);self.window=window;let item=NSStatusBar.system.statusItem(withLength:NSStatusItem.variableLength);item.button?.title="Immersive";let menu=NSMenu();menu.addItem(withTitle:"ウィンドウを表示",action:#selector(showWindow),keyEquivalent:"").target=self;menu.addItem(withTitle:"Immersiveを終了",action:#selector(NSApplication.terminate(_:)),keyEquivalent:"q");item.menu=menu;statusItem=item;NSApp.activate(ignoringOtherApps:true)}
+    func applicationShouldTerminateAfterLastWindowClosed(_ sender:NSApplication)->Bool {false}
+    @objc func showWindow() {window?.makeKeyAndOrderFront(nil);NSApp.activate(ignoringOtherApps:true)}
 }

@@ -1,0 +1,19 @@
+<rx>
+<cmd>
+<zone1>
+<volume>-46.5</volume>
+<state>variable</state>
+<limit>-10.0</limit>
+<disptype>ABSOLUTE</disptype>
+<dispvalue>33.5</dispvalue>
+</zone1>
+<zone2>
+<volume>-40</volume>
+<state>variable</state>
+<limit>-10.0</limit>
+<disptype>ABSOLUTE</disptype>
+<dispvalue> 40</dispvalue>
+</zone2>
+<!-- zone3 も同様 -->
+</cmd>
+</rx>

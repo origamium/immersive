@@ -1,0 +1,22 @@
+<rx>
+<cmd>
+<status>1</status>
+<chlists>
+<ch>
+<name>C</name>
+<status>1</status>
+<sptype>2</sptype>
+<level>0.0dB</level>
+<value>24</value>
+</ch>
+<ch>
+<name>FL</name>
+<status>1</status>
+<sptype>2</sptype>
+<level>0.0dB</level>
+<value>24</value>
+</ch>
+<!-- 全 32 チャンネル分 -->
+</chlists>
+</cmd>
+</rx>

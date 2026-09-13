@@ -43,6 +43,14 @@ public actor CloudClient {
     public func commands(_ id:String) async throws -> [[String:Any]] {let after=ISO8601DateFormatter().string(from:serverNow());return try await request("/rest/v1/commands?target_device_id=eq.\(id)&acknowledged_at=is.null&expires_at=gt.\(after)&order=sequence.asc&limit=100") as? [[String:Any]] ?? []}
     public func ack(_ id:String,_ result:[String:Any]) async throws {_ = try await rpc("ack_command",["cid":id,"response":result])}
     public func object(_ path:String) async throws -> Data {guard !path.contains(".."),!path.hasPrefix("/") else {throw CloudError.message("Invalid object path")};let encoded=path.addingPercentEncoding(withAllowedCharacters:.urlPathAllowed)!;return try await send("/storage/v1/object/authenticated/acoustic-artifacts/\(encoded)",token:token())}
+    public func avrObject(_ path:String) async throws -> Data {
+        let parts=path.split(separator:"/");guard parts.count==2,UUID(uuidString:String(parts[0])) != nil,parts[1].hasSuffix(".json"),UUID(uuidString:String(parts[1].dropLast(5))) != nil else{throw CloudError.message("Invalid AVR object path")}
+        return try await send("/storage/v1/object/authenticated/avr-private/\(path)",token:token())
+    }
+    public func putAvrObject(receiverID:String,snapshotID:String,data:Data) async throws {
+        guard UUID(uuidString:receiverID) != nil,UUID(uuidString:snapshotID) != nil,data.count<=8*1024*1024 else {throw CloudError.message("Invalid AVR artifact")}
+        _ = try await send("/storage/v1/object/avr-private/\(receiverID)/\(snapshotID).json",method:"POST",token:token(),raw:data,contentType:"application/json")
+    }
     public func putObject(_ path:String,data:Data) async throws {let encoded=path.addingPercentEncoding(withAllowedCharacters:.urlPathAllowed)!;_ = try await send("/storage/v1/object/acoustic-artifacts/\(encoded)",method:"POST",token:token(),raw:data,contentType:"application/octet-stream")}
     public func readArtifact(_ artifact:[String:Any],cache:URL) async throws -> Data {
         let aid=artifact["id"] as? String ?? "",w=artifact["workspace_id"] as? String ?? "",manifest=dictionary(artifact["manifest"])

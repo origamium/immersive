@@ -1,0 +1,554 @@
+{
+  "commands": [
+    {
+      "method": "get_all_zone_power",
+      "command": "GetAllZonePowerStatus",
+      "extended": false,
+      "parameters": []
+    },
+    {
+      "method": "get_all_zone_source",
+      "command": "GetAllZoneSource",
+      "extended": false,
+      "parameters": []
+    },
+    {
+      "method": "get_all_zone_volume",
+      "command": "GetAllZoneVolume",
+      "extended": false,
+      "parameters": []
+    },
+    {
+      "method": "get_all_zone_mute",
+      "command": "GetAllZoneMuteStatus",
+      "extended": false,
+      "parameters": []
+    },
+    {
+      "method": "get_all_zone_stereo",
+      "command": "GetAllZoneStereo",
+      "extended": false,
+      "parameters": []
+    },
+    {
+      "method": "get_zone_name",
+      "command": "GetZoneName",
+      "extended": false,
+      "parameters": []
+    },
+    {
+      "method": "get_surround_mode",
+      "command": "GetSurroundModeStatus",
+      "extended": false,
+      "parameters": []
+    },
+    {
+      "method": "get_tone_control",
+      "command": "GetToneControl",
+      "extended": false,
+      "parameters": []
+    },
+    {
+      "method": "get_subwoofer_level",
+      "command": "GetSubwooferLevel",
+      "extended": false,
+      "parameters": []
+    },
+    {
+      "method": "get_channel_levels",
+      "command": "GetChLevel",
+      "extended": false,
+      "parameters": []
+    },
+    {
+      "method": "get_channel_indicators",
+      "command": "GetChannelIndicators",
+      "extended": false,
+      "parameters": []
+    },
+    {
+      "method": "get_rename_source",
+      "command": "GetRenameSource",
+      "extended": false,
+      "parameters": []
+    },
+    {
+      "method": "get_deleted_sources",
+      "command": "GetDeletedSource",
+      "extended": false,
+      "parameters": []
+    },
+    {
+      "method": "get_friendly_name",
+      "command": "GetFriendlyName",
+      "extended": false,
+      "parameters": []
+    },
+    {
+      "method": "get_quick_select",
+      "command": "GetQuickSelectName",
+      "extended": false,
+      "parameters": []
+    },
+    {
+      "method": "get_auto_standby",
+      "command": "GetAutoStandby",
+      "extended": false,
+      "parameters": []
+    },
+    {
+      "method": "get_dimmer",
+      "command": "GetDimmer",
+      "extended": false,
+      "parameters": []
+    },
+    {
+      "method": "get_eco",
+      "command": "GetECO",
+      "extended": false,
+      "parameters": []
+    },
+    {
+      "method": "get_eco_meter",
+      "command": "GetECOMeter",
+      "extended": false,
+      "parameters": []
+    },
+    {
+      "method": "get_picture_mode",
+      "command": "GetPictureMode",
+      "extended": false,
+      "parameters": []
+    },
+    {
+      "method": "get_video_select",
+      "command": "GetVideoSelect",
+      "extended": false,
+      "parameters": []
+    },
+    {
+      "method": "get_audio_info",
+      "command": "GetAudioInfo",
+      "extended": true,
+      "parameters": [
+        "inputmode",
+        "output",
+        "signal",
+        "sound",
+        "fs"
+      ]
+    },
+    {
+      "method": "get_video_info",
+      "command": "GetVideoInfo",
+      "extended": true,
+      "parameters": [
+        "videooutput",
+        "hdmisigin",
+        "hdmisigout"
+      ]
+    },
+    {
+      "method": "get_input_signal",
+      "command": "GetInputSignal",
+      "extended": true,
+      "parameters": [
+        "inputsigall"
+      ]
+    },
+    {
+      "method": "get_active_speaker",
+      "command": "GetActiveSpeaker",
+      "extended": true,
+      "parameters": [
+        "activespall"
+      ]
+    },
+    {
+      "method": "get_sound_mode",
+      "command": "GetSoundMode",
+      "extended": true,
+      "parameters": [
+        "movie",
+        "music",
+        "game",
+        "pure"
+      ]
+    },
+    {
+      "method": "get_sound_mode_list",
+      "command": "GetSoundModeList",
+      "extended": true,
+      "parameters": [
+        "genrelist"
+      ]
+    },
+    {
+      "method": "get_surround_parameter",
+      "command": "GetSurroundParameter",
+      "extended": true,
+      "parameters": [
+        "centerimage",
+        "dimension",
+        "centerwidth",
+        "panorama",
+        "cinemaeq",
+        "loudness",
+        "dyncomp",
+        "dialogcontrol",
+        "lfe",
+        "imax",
+        "auro3dmode",
+        "delaytime",
+        "roomsize"
+      ]
+    },
+    {
+      "method": "get_audyssey",
+      "command": "GetAudyssey",
+      "extended": true,
+      "parameters": [
+        "dynamiceq",
+        "reflevoffset",
+        "dynamicvol",
+        "multeq",
+        "audysseylfc"
+      ]
+    },
+    {
+      "method": "get_audyssey_info",
+      "command": "GetAudyssyInfo",
+      "extended": true,
+      "parameters": [
+        "dynamiceq",
+        "dynamicvol"
+      ]
+    },
+    {
+      "method": "get_restorer_mode",
+      "command": "GetRestorerMode",
+      "extended": true,
+      "parameters": [
+        "mode"
+      ]
+    },
+    {
+      "method": "get_audio_delay",
+      "command": "GetAudioDelay",
+      "extended": true,
+      "parameters": [
+        "audiodelay"
+      ]
+    },
+    {
+      "method": "get_bass_sync",
+      "command": "GetBassSync",
+      "extended": true,
+      "parameters": [
+        "basssync"
+      ]
+    },
+    {
+      "method": "get_bass_treble",
+      "command": "GetBassTreble",
+      "extended": true,
+      "parameters": [
+        "bass",
+        "treble"
+      ]
+    },
+    {
+      "method": "get_output_settings",
+      "command": "GetOutputSettings",
+      "extended": true,
+      "parameters": [
+        "videomode"
+      ]
+    },
+    {
+      "method": "get_lr_channel_level",
+      "command": "GetLRchLevel",
+      "extended": true,
+      "parameters": [
+        "lrchlevel"
+      ]
+    },
+    {
+      "method": "get_hide_sources",
+      "command": "GetHideSources",
+      "extended": true,
+      "parameters": []
+    },
+    {
+      "method": "get_source_rename_0300",
+      "command": "GetSourceRename",
+      "extended": true,
+      "parameters": []
+    },
+    {
+      "method": "get_network_info",
+      "command": "GetNetworkInfo",
+      "extended": true,
+      "parameters": [
+        "dhcp",
+        "ssid",
+        "connection"
+      ]
+    },
+    {
+      "method": "get_hdmi_setup",
+      "command": "GetHdmiSetup",
+      "extended": true,
+      "parameters": [
+        "audioout"
+      ]
+    },
+    {
+      "method": "get_update_info",
+      "command": "GetUpdateInfo",
+      "extended": true,
+      "parameters": [
+        "status"
+      ]
+    },
+    {
+      "method": "get_dialog_enhancer",
+      "command": "GetDialogEnhancer",
+      "extended": true,
+      "parameters": [
+        "mode"
+      ]
+    },
+    {
+      "method": "get_eq_speaker_selection",
+      "command": "GetEQSetting",
+      "extended": true,
+      "parameters": [
+        "speakerselection"
+      ]
+    },
+    {
+      "method": "get_eq_curve_copy",
+      "command": "GetEQOtherFunc",
+      "extended": true,
+      "parameters": [
+        "curvecopy"
+      ]
+    },
+    {
+      "method": "get_setup_lock",
+      "command": "GetSetupLock",
+      "extended": true,
+      "parameters": [
+        "lock"
+      ]
+    },
+    {
+      "method": "get_input_select_mode",
+      "command": "GetInputSelect",
+      "extended": true,
+      "parameters": [
+        "inputmode"
+      ]
+    },
+    {
+      "method": "get_eq_parameter",
+      "command": "GetEQParameter",
+      "extended": true,
+      "parameters": [
+        "eqparamall"
+      ]
+    },
+    {
+      "method": "get_eq_adjust_channels",
+      "command": "GetEQAdjustChList",
+      "extended": true,
+      "parameters": [
+        "adjustch"
+      ]
+    },
+    {
+      "method": "get_resolution_hdmi_list",
+      "command": "GetResolutionHDMIList",
+      "extended": true,
+      "parameters": [
+        "resolution",
+        "hdmiresolution",
+        "resolutionlist"
+      ]
+    },
+    {
+      "method": "get_resolution_analog_list",
+      "command": "GetResolutionAnalogList",
+      "extended": true,
+      "parameters": [
+        "resolutionanalog",
+        "resolutionlist"
+      ]
+    }
+  ],
+  "setupTypes": {
+    "globals": {
+      "1": "Brand",
+      "2": "Language",
+      "3": "FriendlyName",
+      "4": "ZonePower",
+      "5": "ModelType",
+      "6": "ZoneRename",
+      "7": "SourceList",
+      "8": "SetupLock",
+      "9": "BtSingleUsed",
+      "10": "SpeakerPreset",
+      "11": "System"
+    },
+    "home": {
+      "1": "HomeMenu"
+    },
+    "audio": {
+      "3": "SubwooferLevelAdjust",
+      "4": "SurroundParameter",
+      "5": "Restorer",
+      "6": "AudioDelay",
+      "7": "Volume",
+      "8": "BilingualMode",
+      "9": "Audyssey",
+      "10": "GraphicEQ",
+      "11": "BassSync",
+      "12": "DialogLevelAdjust"
+    },
+    "video": {
+      "2": "PictureAdjust",
+      "3": "HdmiSetup",
+      "4": "OutputSettings",
+      "6": "AnalogVideoOut",
+      "7": "OnScreenDisplay",
+      "8": "FourKSignalFormat",
+      "9": "TVFormat",
+      "13": "HDMIScaler"
+    },
+    "inputs": {
+      "2": "InputAssign",
+      "3": "SourceRename",
+      "4": "HideSource",
+      "5": "SourceLevel",
+      "6": "InputSelect"
+    },
+    "speakers": {
+      "2": "AmpAssign",
+      "3": "SpeakerConfig",
+      "4": "Distances",
+      "5": "Levels",
+      "6": "Crossovers",
+      "7": "Bass",
+      "8": "FrontSpeaker",
+      "9": "Playback2Ch",
+      "10": "Subwoofer2Ch"
+    },
+    "network": {
+      "2": "Information",
+      "4": "Settings",
+      "5": "NetworkControl",
+      "6": "FriendlyName",
+      "7": "Diagnostics",
+      "9": "AirPlay",
+      "10": "SpotifyConnect",
+      "11": "RoonReady",
+      "12": "TidalConnect",
+      "13": "QobuzConnect"
+    },
+    "general": {
+      "2": "Language",
+      "3": "ECO",
+      "4": "Zone2Setup",
+      "5": "Zone3Setup",
+      "6": "ZoneRename",
+      "7": "QuickSelectNames",
+      "8": "TriggerOut1",
+      "9": "TriggerOut2",
+      "10": "FrontDisplay",
+      "11": "Firmware",
+      "14": "UsageData",
+      "17": "AutoStandby"
+    }
+  },
+  "queries": [
+    "PW?",
+    "ZM?",
+    "MV?",
+    "CV?",
+    "MU?",
+    "SI?",
+    "SV?",
+    "SD?",
+    "MS?",
+    "SLP?",
+    "STBY?",
+    "ECO?",
+    "Z2?",
+    "Z2MU?",
+    "Z2CS?",
+    "Z2CV?",
+    "Z2HPF?",
+    "Z2SLP?",
+    "Z2STBY?",
+    "Z3?",
+    "Z3MU?",
+    "Z3CS?",
+    "Z3CV?",
+    "Z3HPF?",
+    "Z3SLP?",
+    "Z3STBY?",
+    "PSTONE CTRL ?",
+    "PSCINEMA EQ. ?",
+    "PSLOM ?",
+    "PSMULTEQ: ?",
+    "PSDYNEQ ?",
+    "PSREFLEV ?",
+    "PSDYNVOL ?",
+    "PSLFC ?",
+    "PSCNTAMT ?",
+    "PSDIL ?",
+    "PSDEH ?",
+    "PSNEURAL ?",
+    "PSDIC ?",
+    "PSCES ?",
+    "PSVSS ?",
+    "PSDEL ?",
+    "PSDRC ?",
+    "PSMDAX ?",
+    "PSBSC ?",
+    "PSLFE ?",
+    "PSBAS ?",
+    "PSTRE ?",
+    "PSDELAY ?",
+    "PSEFF ?",
+    "PSRSZ ?",
+    "PSSWL ?",
+    "PSSWL2 ?",
+    "PSSWR ?",
+    "PSAUROPR ?",
+    "PSAUROST ?",
+    "PSAUROMODE ?",
+    "PSGEQ ?",
+    "VSASP ?",
+    "VSSC ?",
+    "VSSCH ?",
+    "VSAUDIO ?",
+    "VSVPM ?",
+    "VSVST ?",
+    "VSMONI ?",
+    "SSSOD ?",
+    "SSFUN ?",
+    "SSLOC ?",
+    "SSINFAISSIG ?",
+    "SSINFAISFSV ?",
+    "SSINFSIGRES ?",
+    "SSSPC ?",
+    "SSQSNZMA ?",
+    "SSSMG ?",
+    "SSINFFRM ?",
+    "NSFRN ?",
+    "MNMEN?",
+    "MNZST?"
+  ]
+}

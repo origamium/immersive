@@ -1,0 +1,15 @@
+<rx>
+<cmd>
+<functionrename>
+<list>
+<name>CBL/SAT</name>
+<rename>CBL/SAT     </rename>
+</list>
+<list>
+<name>Media Player</name>
+<rename>MPLAY       </rename>
+</list>
+<!-- 全 18 ソース分 -->
+</functionrename>
+</cmd>
+</rx>

@@ -1,0 +1,1 @@
+avcon dd8dc8a5ea09ed03b7548bc931305ad324875d17 の docs/api-reference.md に掲載された実機XML抜粋。省略コメントも原文のまま。合成シミュレーターとは独立した回帰フィクスチャ。

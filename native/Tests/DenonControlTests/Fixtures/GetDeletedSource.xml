@@ -1,0 +1,17 @@
+<rx>
+<cmd>
+<functiondelete>
+<list>
+<name>CBL/SAT</name>
+<FuncName>CBL/SAT</FuncName>
+<use>1</use>
+</list>
+<list>
+<name>AUX3</name>
+<FuncName>AUX3</FuncName>
+<use>0</use>
+</list>
+<!-- 全 18 ソース分 -->
+</functiondelete>
+</cmd>
+</rx>
