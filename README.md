@@ -27,6 +27,8 @@ CLIは`native/.build/release/acoustic-lab`。`devices`で能力確認、`generat
 
 ## Apple TV
 
+登録後の手順は [Apple TV実機への署名・インストール・テスト](docs/tvos-signing-and-testing.md) を参照してください。Xcodeの直接実行からTestFlight内部テスト、音響の受け入れ試験までまとめています。
+
 `native/AppleTV/AcousticTV.xcodeproj`をXcodeで開き、実機インストール用のSigning Teamを選択します。プロジェクト再生成は`pnpm native:tv`。Simulatorでコンパイル検証済みですが、実機の世代・AVR経路によるAtmos分離は未検証です。
 
 Webの接続画面からテスト素材と作成条件を保存し、まず検証モードで再生。対象スピーカーの分離と前後の時刻基準を確認した記録を保存してから通常測定に使用します。Atmosの表示だけで7.1.6の個別出力を有効化しません。
@@ -58,3 +60,5 @@ pnpm native:test
 - [状態管理、保存、権限、バックアップと制約](docs/architecture.md)
 
 自動でAVR設定を書き換える機能はありません。提案を評価し、同じ条件で再測定する流れを採用しています。
+
+[avcon統合の運用・検証状況](docs/avcon/integration.md)
