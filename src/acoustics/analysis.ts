@@ -1,3 +1,4 @@
+import { isSM58 } from "./microphones";
 import type { AnalysisResult, ResponsePoint, RoomModel } from "./types";
 
 export function parseResponse(text: string): ResponsePoint[] {
@@ -148,6 +149,15 @@ export function comparisonWarnings(
   for (const field of fields)
     if (a.context[field] !== b.context[field])
       warnings.push(`${field}が異なります`);
+  if (a.context.microphoneProfile !== b.context.microphoneProfile)
+    warnings.push("マイク種別が異なります");
+  if (JSON.stringify(a.context.input) !== JSON.stringify(b.context.input))
+    warnings.push("入力機器・チャンネル・レートが異なります");
+  if (
+    JSON.stringify(a.context.acquisition) !==
+    JSON.stringify(b.context.acquisition)
+  )
+    warnings.push("出力機器・チャンネル・測定方式が異なります");
   if (a.context.calibration?.sha256 !== b.context.calibration?.sha256)
     warnings.push("校正ファイルが異なります");
   if (JSON.stringify(a.context.position) !== JSON.stringify(b.context.position))
@@ -192,6 +202,7 @@ export function responseDistance(a: ResponsePoint[], b: ResponsePoint[]) {
 }
 export function eqSuggestions(result: AnalysisResult) {
   if (
+    isSM58(result.context) ||
     result.quality.level !== "verified" ||
     !result.context.calibration ||
     !result.context.profile.target.length

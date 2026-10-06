@@ -1,5 +1,5 @@
 {
-  "name": "my-vue-app",
+  "name": "immersive-acoustic-lab",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -21,6 +21,7 @@
     "test:db": "node scripts/test-cloud.mjs",
     "native:test": "swift test --package-path native",
     "native:mac": "sh native/package-mac.sh",
+    "native:ios": "xcodebuild -project native/iOS/AcousticIOS.xcodeproj -target AcousticIOS -configuration Debug -sdk iphonesimulator CODE_SIGNING_ALLOWED=NO build",
     "native:tv": "node native/generate-project.mjs"
   },
   "dependencies": {

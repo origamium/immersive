@@ -2,6 +2,8 @@ import { lazy, Suspense } from "react";
 import { parseResponse, roomModes } from "./analysis";
 import { profiles } from "./defaults";
 import { sha256 } from "./local";
+import { MicrophoneNotice } from "./MicrophoneNotice";
+import { isSM58 } from "./microphones";
 import type { MeasurementContext, PlaybackProfile, Point3 } from "./types";
 
 const MeasurementRoom = lazy(() => import("./MeasurementRoom"));
@@ -107,6 +109,9 @@ export function RoomPanel({ context: c, change, task }: Props) {
                 Apple TV → AVC-A110（検証済みアセット）
               </option>
               <option value="external">外部再生 / 手動配線</option>
+              <option value="browser">
+                このMacのブラウザー（左右の個別測定）
+              </option>
             </select>
           </label>
           <div className="fields">
@@ -200,6 +205,29 @@ export function RoomPanel({ context: c, change, task }: Props) {
       </div>
       <section className="panel">
         <h2>マイク・校正・時間基準</h2>
+        <label>
+          マイク種別
+          <select
+            value={c.microphoneProfile ?? (isSM58(c) ? "sm58" : "unknown")}
+            onChange={(e) => {
+              const microphoneProfile = e.target.value as NonNullable<
+                MeasurementContext["microphoneProfile"]
+              >;
+              change({
+                ...c,
+                microphoneProfile,
+                microphone:
+                  microphoneProfile === "sm58" ? "SHURE SM58" : "未登録",
+                calibration: null,
+              });
+            }}
+          >
+            <option value="sm58">SHURE SM58（参考測定）</option>
+            <option value="measurement">測定用マイク</option>
+            <option value="unknown">その他／内蔵マイク</option>
+          </select>
+        </label>
+        <MicrophoneNotice context={c} />
         <div className="fields">
           {(
             [

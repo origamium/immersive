@@ -39,16 +39,23 @@ import {
   getLocal,
   localCaptures,
   localExperiments,
+  localObservations,
   localResults,
   putLocal,
   recoverCaptures,
   sha256,
 } from "./local";
+import { MicrophoneNotice } from "./MicrophoneNotice";
 import { runMeasurement } from "./measurement";
+import { isSM58, microphoneQuality } from "./microphones";
+import { ObservationsPanel } from "./ObservationsPanel";
+import { isIOSCaptureHost } from "./platform";
 import { RepeatabilityPanel } from "./RepeatabilityPanel";
 import { RoomPanel } from "./RoomPanel";
+import { StandingModesPanel } from "./StandingModesPanel";
 import { StimulusPanel } from "./StimulusPanel";
 import type {
+  AmbientObservation,
   AnalysisResult,
   CloudDevice,
   Experiment,
@@ -59,9 +66,6 @@ import "./acoustics.css";
 const AvrPanel = lazy(() =>
   import("../avr/AvrPanel").then((m) => ({ default: m.AvrPanel }))
 );
-const Visualizer = lazy(() =>
-  import("../App").then((m) => ({ default: m.App }))
-);
 const tabs = [
   "測定",
   "解析",
@@ -70,7 +74,7 @@ const tabs = [
   "AVR",
   "接続",
 ] as const;
-type Tab = (typeof tabs)[number] | "演出";
+type Tab = (typeof tabs)[number];
 const qualityName = {
   verified: "条件検証済み",
   relative: "相対評価",
@@ -100,6 +104,8 @@ const message = (error: unknown) =>
       : String(error);
 
 export function AcousticLab() {
+  const iosCaptureHost = isIOSCaptureHost();
+  const [observations, setObservations] = useState<AmbientObservation[]>([]);
   const [validationOnly, setValidationOnly] = useState(false);
   const [tab, setTab] = useState<Tab>("測定"),
     [context, setContext] = useState(initialContext),
@@ -142,14 +148,20 @@ export function AcousticLab() {
     }
   }, [url, publicKey]);
   const refreshLocal = useCallback(async () => {
-    const [r, c, e] = await Promise.all([
+    const [r, c, e, o] = await Promise.all([
       localResults(),
       localCaptures(),
       localExperiments(),
+      localObservations(),
     ]);
-    setResults(r.sort((a, b) => b.createdAt.localeCompare(a.createdAt)));
+    setResults(
+      r
+        .map(microphoneQuality)
+        .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+    );
     setCaptures(c.sort((a, b) => b.createdAt.localeCompare(a.createdAt)));
     setExperiments(e);
+    setObservations(o.sort((a, b) => b.createdAt.localeCompare(a.createdAt)));
   }, []);
   const refresh = useCallback(async () => {
     await refreshLocal();
@@ -220,6 +232,14 @@ export function AcousticLab() {
         setError(message(e))
       );
   }, [context, loaded]);
+  useEffect(() => {
+    if (iosCaptureHost && context.profile.route !== "apple-tv") {
+      setContext({
+        ...context,
+        profile: { ...context.profile, route: "apple-tv" },
+      });
+    }
+  }, [context, iosCaptureHost]);
   useEffect(() => {
     void refresh().catch((e) => setError(message(e)));
     if (!client) return;
@@ -370,7 +390,11 @@ export function AcousticLab() {
         }, 2300);
       });
       manual.current = recorder;
-      await recorder.start(context, inputId);
+      await recorder.start(context, inputId, {
+        purpose: "manual",
+        analysisOwner: "browser",
+        inputChannel: context.input?.channel ?? 1,
+      });
       setRecording(true);
       setStatus("原音を収録中 · 完了したら停止してください");
     });
@@ -418,7 +442,7 @@ export function AcousticLab() {
           <button
             type="button"
             disabled={recording}
-            onClick={() => setTab("演出")}
+            onClick={() => window.location.assign("/visualizer")}
           >
             ビジュアライザー ↗
           </button>
@@ -460,6 +484,12 @@ export function AcousticLab() {
                 <span className="badge">{context.profile.name}</span>
               </div>
               <div className="measurement-grid">
+                {!iosCaptureHost && (
+                  <div className="note" role="note">
+                    収録と再生開始はAcoustic Lab
+                    iOSアプリから行います。この画面ではAVR操作、測定条件、解析結果の確認・調整ができます。
+                  </div>
+                )}
                 <section className="panel speaker-panel">
                   <div className="panel-heading">
                     <h2>測定するスピーカー</h2>
@@ -539,7 +569,7 @@ export function AcousticLab() {
                   <label>
                     再生端末
                     <select
-                      disabled={recording}
+                      disabled={!iosCaptureHost || recording}
                       value={target}
                       onChange={(e) => setTarget(e.target.value)}
                     >
@@ -551,44 +581,48 @@ export function AcousticLab() {
                       ))}
                     </select>
                   </label>
-                  <label>
-                    録音入力
-                    <select
-                      disabled={recording}
-                      value={inputId}
-                      onChange={(e) => setInputId(e.target.value)}
-                    >
-                      <option value="">この端末の既定マイク</option>
-                      {inputs.map((d) => (
-                        <option value={d.deviceId} key={d.deviceId}>
-                          {d.label || "マイク"}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  <button
-                    type="button"
-                    className="text-button"
-                    disabled={busy || recording}
-                    onClick={() =>
-                      task(async () => {
-                        const stream =
-                          await navigator.mediaDevices.getUserMedia({
-                            audio: true,
+                  {iosCaptureHost && (
+                    <label>
+                      録音入力
+                      <select
+                        disabled={recording}
+                        value={inputId}
+                        onChange={(e) => setInputId(e.target.value)}
+                      >
+                        <option value="">この端末の既定マイク</option>
+                        {inputs.map((d) => (
+                          <option value={d.deviceId} key={d.deviceId}>
+                            {d.label || "マイク"}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  )}
+                  {iosCaptureHost && (
+                    <button
+                      type="button"
+                      className="text-button"
+                      disabled={busy || recording}
+                      onClick={() =>
+                        task(async () => {
+                          const stream =
+                            await navigator.mediaDevices.getUserMedia({
+                              audio: true,
+                            });
+                          stream.getTracks().forEach((t) => {
+                            t.stop();
                           });
-                        stream.getTracks().forEach((t) => {
-                          t.stop();
-                        });
-                        setInputs(
-                          (
-                            await navigator.mediaDevices.enumerateDevices()
-                          ).filter((d) => d.kind === "audioinput")
-                        );
-                      })
-                    }
-                  >
-                    マイク一覧を更新
-                  </button>
+                          setInputs(
+                            (
+                              await navigator.mediaDevices.enumerateDevices()
+                            ).filter((d) => d.kind === "audioinput")
+                          );
+                        })
+                      }
+                    >
+                      マイク一覧を更新
+                    </button>
+                  )}
                   {context.profile.route === "apple-tv" && (
                     <>
                       <label>
@@ -609,55 +643,64 @@ export function AcousticLab() {
                       </label>
                     </>
                   )}
-                  <meter
-                    className="level-meter"
-                    aria-label="入力ピーク dBFS"
-                    min={-80}
-                    max={0}
-                    value={Math.max(-80, Math.min(0, level))}
-                  >
-                    <i
-                      style={{
-                        width: `${Math.max(0, Math.min(100, ((level + 80) / 80) * 100))}%`,
-                      }}
-                    />
-                  </meter>
-                  <p className="meter-label">
-                    INPUT PEAK{" "}
-                    <span>{level <= -150 ? "—" : level.toFixed(1)} dBFS</span>
-                  </p>
-                  <button
-                    type="button"
-                    className={recording ? "danger primary" : "primary"}
-                    disabled={!recording && (busy || !loaded)}
-                    onClick={recording ? stop : start}
-                  >
-                    {recording ? "■ 測定を停止" : "◎ 測定を開始"}
-                  </button>
+                  {iosCaptureHost && (
+                    <meter
+                      className="level-meter"
+                      aria-label="入力ピーク dBFS"
+                      min={-80}
+                      max={0}
+                      value={Math.max(-80, Math.min(0, level))}
+                    >
+                      <i
+                        style={{
+                          width: `${Math.max(0, Math.min(100, ((level + 80) / 80) * 100))}%`,
+                        }}
+                      />
+                    </meter>
+                  )}
+                  {iosCaptureHost && (
+                    <p className="meter-label">
+                      INPUT PEAK{" "}
+                      <span>{level <= -150 ? "—" : level.toFixed(1)} dBFS</span>
+                    </p>
+                  )}
+                  {iosCaptureHost && (
+                    <button
+                      type="button"
+                      className={recording ? "danger primary" : "primary"}
+                      disabled={!recording && (busy || !loaded)}
+                      onClick={recording ? stop : start}
+                    >
+                      {recording ? "■ 測定を停止" : "◎ 測定を開始"}
+                    </button>
+                  )}
                   <output className="status" aria-live="polite">
                     {status}
                   </output>
-                  <details>
-                    <summary>手動で原音だけを収録</summary>
-                    <p className="muted">
-                      外部で同じESSと時間基準信号を再生する場合に使います。任意の音楽や環境音から室内IRは算出しません。
-                    </p>
-                    <button
-                      type="button"
-                      disabled={recording || busy}
-                      onClick={startManual}
-                    >
-                      原音の収録を開始
-                    </button>
-                  </details>
+                  {iosCaptureHost && (
+                    <details>
+                      <summary>手動で原音だけを収録</summary>
+                      <p className="muted">
+                        外部で同じESSと時間基準信号を再生する場合に使います。任意の音楽や環境音から室内IRは算出しません。
+                      </p>
+                      <button
+                        type="button"
+                        disabled={recording || busy}
+                        onClick={startManual}
+                      >
+                        原音の収録を開始
+                      </button>
+                    </details>
+                  )}
                 </section>
               </div>
+
               <div className="three-col">
                 <article className="panel compact">
                   <p className="eyebrow">01 / CAPTURE</p>
                   <h3>原音を残す</h3>
                   <p>
-                    無圧縮PCMをまず端末に保存。通信が戻ればアップロードを再開できます。
+                    無圧縮PCMをまず端末に保存。WAVとZIPで持ち出し、スイープ原音から再解析できます。
                   </p>
                 </article>
                 <article className="panel compact">
@@ -776,6 +819,9 @@ export function AcousticLab() {
                       </label>
                     </div>
                     <ResponseChart
+                      supportedBand={
+                        isSM58(result.context) ? [50, 15000] : undefined
+                      }
                       curves={[
                         {
                           name: result.title,
@@ -794,7 +840,9 @@ export function AcousticLab() {
                     <p className="muted">
                       相対レベル / 伝達ゲイン。絶対SPLとしては使用できません。
                     </p>
+                    <MicrophoneNotice context={result.context} />
                   </section>
+                  <StandingModesPanel result={result} results={results} />
                   <div className="two-col">
                     <section className="panel">
                       <h2>測定の信頼性</h2>
@@ -1225,8 +1273,17 @@ export function AcousticLab() {
                   <p className="empty">測定はまだありません。</p>
                 )}
               </section>
+              <ObservationsPanel observations={observations} />
               <section className="panel">
                 <h2>原音と保存状況</h2>
+                <output className="status" aria-live="polite">
+                  {status}
+                </output>
+                {busy && abort.current && (
+                  <button type="button" onClick={() => abort.current?.abort()}>
+                    解析を中止
+                  </button>
+                )}
                 {captures.length === 0 && (
                   <p className="muted">
                     このブラウザーに原音は保存されていません。
@@ -1257,13 +1314,47 @@ export function AcousticLab() {
                       >
                         WAV
                       </button>
+                      {c.purpose === "sweep" &&
+                        c.analysisOwner === "browser" &&
+                        c.status === "complete" && (
+                          <button
+                            type="button"
+                            disabled={busy}
+                            onClick={() =>
+                              task(async () => {
+                                const controller = new AbortController();
+                                abort.current = controller;
+                                setRecording(true);
+                                try {
+                                  const { analyzeLocalCapture } = await import(
+                                    "./localAnalysis"
+                                  );
+                                  const r = await analyzeLocalCapture(
+                                    c,
+                                    controller.signal,
+                                    setStatus
+                                  );
+                                  await saveResult(r);
+                                } finally {
+                                  abort.current = null;
+                                  setRecording(false);
+                                }
+                              })
+                            }
+                          >
+                            原音から再解析
+                          </button>
+                        )}
                       <button
                         type="button"
                         disabled={
                           busy ||
                           !workspace ||
                           c.status === "uploaded" ||
-                          c.status === "recording"
+                          c.status === "recording" ||
+                          c.analysisOwner === "browser" ||
+                          c.purpose === "ambient" ||
+                          c.purpose === "manual"
                         }
                         onClick={() =>
                           task(async () => {
@@ -1282,6 +1373,11 @@ export function AcousticLab() {
                       >
                         保存 / 再開
                       </button>
+                      {c.analysisOwner === "browser" && (
+                        <small className="muted">
+                          原音はこのブラウザー／WAV／ZIPへ保存
+                        </small>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -1384,27 +1480,6 @@ export function AcousticLab() {
                 publicKey={publicKey}
                 task={task}
               />
-            </>
-          )}
-          {tab === "演出" && (
-            <>
-              <div className="section-heading">
-                <div>
-                  <p className="eyebrow">VISUAL EXPERIENCE</p>
-                  <h1>ビジュアライザー</h1>
-                  <p className="muted">
-                    音の演出表示です。音響測定や伝搬シミュレーションの結果ではありません。
-                  </p>
-                </div>
-                <button type="button" onClick={() => setTab("測定")}>
-                  測定に戻る
-                </button>
-              </div>
-              <div className="visualizer-wrap">
-                <Suspense fallback={<p>読み込み中…</p>}>
-                  <Visualizer />
-                </Suspense>
-              </div>
             </>
           )}
         </main>

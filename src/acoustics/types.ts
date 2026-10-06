@@ -62,8 +62,25 @@ export interface MeasurementContext {
   profile: PlaybackProfile;
   speakerId: string;
   position: Point3;
+  positionName?: string;
   orientation: string;
   microphone: string;
+  microphoneProfile?: "sm58" | "measurement" | "unknown";
+  input?: {
+    deviceId: string;
+    label: string;
+    /** Physical input channel, numbered from 1. */
+    channel: number;
+    channelCount: number;
+    sampleRate: number;
+  };
+  acquisition?: {
+    mode: "browser" | "cloud";
+    outputDeviceId?: string;
+    outputLabel?: string;
+    /** Playback channel, numbered from 1. */
+    outputChannel?: number;
+  };
   calibration: Calibration | null;
   inputGain: string;
   amplifierVolume: string;
@@ -118,6 +135,23 @@ export interface AnalysisResult {
   waterfall?: { seconds: number; response: ResponsePoint[] }[];
   delaySeconds: number | null;
   rawArtifactId: string | null;
+  localCaptureId?: string;
+}
+export interface AmbientObservation {
+  schemaVersion: 1;
+  id: string;
+  createdAt: string;
+  context: MeasurementContext;
+  localCaptureId: string;
+  durationSeconds: number;
+  sampleRate: number;
+  /** Input power spectral density, not a transfer response or calibrated SPL. */
+  spectrumUnit: "dBFS/Hz";
+  spectrum: ResponsePoint[];
+  rmsDBFS: number;
+  peakDBFS: number;
+  clippedSamples: number;
+  reasons: string[];
 }
 export interface Experiment {
   id: string;
@@ -131,6 +165,8 @@ export interface Experiment {
 }
 export interface LocalCapture {
   ownerTabId?: string;
+  purpose?: "sweep" | "ambient" | "manual";
+  analysisOwner?: "browser" | "cloud";
   id: string;
   createdAt: string;
   context: MeasurementContext;

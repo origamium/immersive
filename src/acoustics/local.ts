@@ -1,4 +1,9 @@
-import type { AnalysisResult, Experiment, LocalCapture } from "./types";
+import type {
+  AmbientObservation,
+  AnalysisResult,
+  Experiment,
+  LocalCapture,
+} from "./types";
 
 const DB = "immersive-acoustics-v1";
 export function captureTabId() {
@@ -27,7 +32,7 @@ export async function recoverCaptures() {
 }
 export function openLocal(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
-    const request = indexedDB.open(DB, 1);
+    const request = indexedDB.open(DB, 2);
     request.onupgradeneeded = () => {
       for (const name of [
         "results",
@@ -35,10 +40,15 @@ export function openLocal(): Promise<IDBDatabase> {
         "chunks",
         "experiments",
         "settings",
+        "observations",
       ])
-        request.result.createObjectStore(name);
+        if (!request.result.objectStoreNames.contains(name))
+          request.result.createObjectStore(name);
     };
-    request.onsuccess = () => resolve(request.result);
+    request.onsuccess = () => {
+      request.result.onversionchange = () => request.result.close();
+      resolve(request.result);
+    };
     request.onerror = () => reject(request.error);
   });
 }
@@ -86,6 +96,8 @@ export async function listLocal<T>(store: string): Promise<T[]> {
 export const localResults = () => listLocal<AnalysisResult>("results");
 export const localCaptures = () => listLocal<LocalCapture>("captures");
 export const localExperiments = () => listLocal<Experiment>("experiments");
+export const localObservations = () =>
+  listLocal<AmbientObservation>("observations");
 export async function sha256(bytes: ArrayBuffer): Promise<string> {
   return Array.from(
     new Uint8Array(await crypto.subtle.digest("SHA-256", bytes))

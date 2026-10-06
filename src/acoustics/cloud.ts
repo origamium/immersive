@@ -1,6 +1,7 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { Upload } from "tus-js-client";
 import { getLocal, putLocal, sha256 } from "./local";
+import { microphoneQuality } from "./microphones";
 import type {
   AnalysisResult,
   CloudDevice,
@@ -156,6 +157,14 @@ export async function syncCapture(
   key: string,
   progress: (percent: number) => void
 ) {
+  if (
+    capture.purpose === "ambient" ||
+    capture.purpose === "manual" ||
+    capture.analysisOwner === "browser"
+  )
+    throw new Error(
+      "この録音は端末内で管理します。原音はWAVまたはバックアップで保存してください。"
+    );
   const saved = await getLocal<{ artifactId: string; sessionId: string }>(
     "settings",
     `upload:${capture.id}`
@@ -230,6 +239,7 @@ export async function syncResult(
   workspace: string,
   result: AnalysisResult
 ) {
+  result = microphoneQuality(result);
   const existing = await client
     .from("analysis_results")
     .select("id")
@@ -273,7 +283,8 @@ export async function uploadFile(
   kind: "impulse" | "stimulus",
   url: string,
   key: string,
-  progress: (p: number) => void
+  progress: (p: number) => void,
+  mediaProfile?: "stereo" | "multiCh" | "dolbyAtmos"
 ) {
   if (!file.size || file.size > 512 * 1024 * 1024)
     throw new Error("ファイルは512 MiB以下にしてください");
@@ -304,6 +315,7 @@ export async function uploadFile(
     info: {
       schemaVersion: 1,
       encoding: kind === "impulse" ? "wav" : "media",
+      ...(kind === "stimulus" && mediaProfile ? { mediaProfile } : {}),
       filename: file.name,
       parts,
       complete: true,

@@ -3,11 +3,18 @@ import {
   getLocal,
   localCaptures,
   localExperiments,
+  localObservations,
   localResults,
   putLocal,
   sha256,
 } from "./local";
-import type { AnalysisResult, Experiment, LocalCapture } from "./types";
+import { microphoneQuality } from "./microphones";
+import type {
+  AmbientObservation,
+  AnalysisResult,
+  Experiment,
+  LocalCapture,
+} from "./types";
 
 export function download(
   name: string,
@@ -32,9 +39,14 @@ const escapeHTML = (s: string) =>
       ]!
   );
 export function resultCSV(result: AnalysisResult) {
+  result = microphoneQuality(result);
   return `# Acoustic Lab ${result.version}\n# id ${result.id}\n# quality ${result.quality.level}\nfrequency_hz,level_db,phase_degrees\n${result.response.map((p) => `${p.hz},${p.db},${p.phase ?? ""}`).join("\n")}\n`;
 }
+export function observationCSV(observation: AmbientObservation) {
+  return `# Acoustic Lab ambient spectrum\n# id ${observation.id}\n# duration_seconds ${observation.durationSeconds}\n# rms_dbfs ${observation.rmsDBFS}\n# peak_dbfs ${observation.peakDBFS}\n# spectrum_unit dBFS/Hz\n# Uncalibrated input levels; not SPL or transfer response\nfrequency_hz,power_spectral_density_dbfs_per_hz\n${observation.spectrum.map((p) => `${p.hz},${p.db}`).join("\n")}\n`;
+}
 export function reportHTML(result: AnalysisResult) {
+  result = microphoneQuality(result);
   const finite = result.response.filter(
     (p) => p.hz >= 20 && p.hz <= 20000 && Number.isFinite(p.db)
   );
@@ -49,15 +61,23 @@ export function reportHTML(result: AnalysisResult) {
   return `<!doctype html><html lang="ja"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>${escapeHTML(result.title)}</title><style>body{font:16px system-ui;max-width:900px;margin:40px auto;padding:20px;color:#123}svg{width:100%;background:#f0f5f5}pre{white-space:pre-wrap;overflow-wrap:anywhere}td,th{padding:8px;border-bottom:1px solid #ddd;text-align:left}@media print{body{margin:0}}</style><h1>${escapeHTML(result.title)}</h1><p>${escapeHTML(result.createdAt)} · ${escapeHTML(result.version)} · ${escapeHTML(result.quality.level)}</p><p>${escapeHTML(result.quality.reasons.join(" / "))}</p><svg viewBox="0 0 800 270" role="img" aria-label="周波数応答"><path d="${path}" fill="none" stroke="#007965" stroke-width="2"/><text x="40" y="258">20 Hz</text><text x="700" y="258">20 kHz</text><text x="5" y="20">dB</text></svg><p>レベルは校正条件に依存します。感度校正なしの値は絶対SPLではありません。</p><h2>品質</h2><p>SNR: ${result.quality.snrDB ?? "未評価"} dB / drift: ${result.quality.driftPPM ?? "未評価"} ppm / clipping: ${result.quality.clippedSamples}</p><h2>帯域減衰 [s]</h2><table><tr><th>Hz</th><th>EDT</th><th>T20</th><th>T30</th><th>判定</th></tr>${(result.decay ?? []).map((d) => `<tr><td>${d.hz}</td><td>${d.edt?.toFixed(3) ?? "—"}</td><td>${d.t20?.toFixed(3) ?? "—"}</td><td>${d.t30?.toFixed(3) ?? "—"}</td><td>${escapeHTML(d.reason ?? "")}</td></tr>`).join("")}</table><h2>測定条件・再現情報</h2><pre>${escapeHTML(JSON.stringify(result.context, null, 2))}</pre><p>measurement ${escapeHTML(result.id)} / raw artifact ${escapeHTML(result.rawArtifactId ?? "未登録")}</p></html>`;
 }
 export async function exportBackup() {
-  const [results, captures, experiments] = await Promise.all([
+  const [results, captures, experiments, observations] = await Promise.all([
     localResults(),
     localCaptures(),
     localExperiments(),
+    localObservations(),
   ]);
   const context = await getLocal("settings", "context");
   const files: Record<string, Uint8Array> = {
     "data.json": strToU8(
-      JSON.stringify({ version: 1, results, captures, experiments, context })
+      JSON.stringify({
+        version: 2,
+        results,
+        captures,
+        experiments,
+        observations,
+        context,
+      })
     ),
   };
   for (const c of captures)
@@ -112,16 +132,19 @@ export async function restoreBackup(file: File) {
     results: AnalysisResult[];
     captures: LocalCapture[];
     experiments: Experiment[];
+    observations?: AmbientObservation[];
     context?: unknown;
   };
   if (
-    data.version !== 1 ||
+    (data.version !== 1 && data.version !== 2) ||
     !Array.isArray(data.results) ||
     !Array.isArray(data.captures) ||
-    !Array.isArray(data.experiments)
+    !Array.isArray(data.experiments) ||
+    (data.version === 2 && !Array.isArray(data.observations))
   )
     throw new Error("データ形式が不正です");
   const uuid = /^[0-9a-f-]{36}$/i;
+  const observations = data.version === 2 ? (data.observations ?? []) : [];
   for (const r of data.results)
     if (
       !uuid.test(r.id) ||
@@ -131,6 +154,37 @@ export async function restoreBackup(file: File) {
       !r.quality
     )
       throw new Error("測定データが不正です");
+  for (const observation of observations)
+    if (
+      !uuid.test(observation.id) ||
+      observation.schemaVersion !== 1 ||
+      observation.spectrumUnit !== "dBFS/Hz" ||
+      !uuid.test(observation.localCaptureId) ||
+      !observation.context?.profile ||
+      !Number.isFinite(observation.durationSeconds) ||
+      observation.durationSeconds <= 0 ||
+      !Number.isFinite(observation.sampleRate) ||
+      observation.sampleRate < 8000 ||
+      observation.sampleRate > 384000 ||
+      !Number.isFinite(observation.rmsDBFS) ||
+      !Number.isFinite(observation.peakDBFS) ||
+      !Number.isSafeInteger(observation.clippedSamples) ||
+      observation.clippedSamples < 0 ||
+      !Array.isArray(observation.reasons) ||
+      !observation.reasons.every((reason) => typeof reason === "string") ||
+      !Array.isArray(observation.spectrum) ||
+      !observation.spectrum.every(
+        (point) =>
+          Number.isFinite(point.hz) &&
+          point.hz > 0 &&
+          point.hz <= observation.sampleRate / 2 &&
+          Number.isFinite(point.db)
+      ) ||
+      !data.captures.some(
+        (capture) => capture.id === observation.localCaptureId
+      )
+    )
+      throw new Error("環境音データが不正です");
   for (const c of data.captures) {
     if (
       !uuid.test(c.id) ||
@@ -165,6 +219,9 @@ export async function restoreBackup(file: File) {
   for (const e of data.experiments)
     if (!(await getLocal("experiments", e.id)))
       await putLocal("experiments", e.id, e);
+  for (const observation of observations)
+    if (!(await getLocal("observations", observation.id)))
+      await putLocal("observations", observation.id, observation);
   if (data.context && !(await getLocal("settings", "context")))
     await putLocal("settings", "context", data.context);
 }

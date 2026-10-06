@@ -30,6 +30,7 @@ export async function runMeasurement(options: {
   url: string;
   key: string;
   inputId?: string;
+  inputChannel?: number;
   assetId?: string;
   validationOnly?: boolean;
   signal: AbortSignal;
@@ -39,6 +40,7 @@ export async function runMeasurement(options: {
 }) {
   const { client, workspace, target, signal, onState } = options;
   const context = structuredClone(options.context);
+  context.acquisition = { mode: "cloud" };
   if (context.profile.route === "apple-tv") {
     context.profile.settings["Asset mapping"] = options.validationOnly
       ? "trial"
@@ -94,7 +96,11 @@ export async function runMeasurement(options: {
             });
         }, 4000);
       onState(`測定 ${repeat + 1}/${context.profile.repeats} · マイク準備`);
-      capture = await recorder.start(context, options.inputId);
+      capture = await recorder.start(context, options.inputId, {
+        inputChannel: options.inputChannel ?? context.input?.channel ?? 1,
+        purpose: "sweep",
+        analysisOwner: "cloud",
+      });
       const session = await createSession(client, workspace, capture.context);
       sid = session.id;
       capture.cloudSessionId = sid;

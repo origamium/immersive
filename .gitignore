@@ -358,3 +358,6 @@ Temporary Items
 
 # claude
 .claude
+
+# iOS simulator build products
+native/iOS/build/
