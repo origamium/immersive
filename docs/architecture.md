@@ -2,9 +2,11 @@
 
 ## 構成
 
-- React: 測定条件、前面PCM録音、解析表示、比較、履歴、校正、3D座標、端末登録。従来のビジュアライザーは演出表示として分離。
-- Mac Swift: CoreAudio AUHAL再生、AVAudioEngine + ExtAudioFile非同期録音、Accelerate DSP、クラウド解析ワーカー。認証セッションはKeychain。
-- tvOS SwiftUI: AVPlayerによる事前取得素材の再生、端末登録、準備応答、停止監視。Xcodeプロジェクトを同梱。
+- React Web: AVR操作、測定条件、結果・履歴・比較・調整を担当。`/visualizer`は3Dスピーカー配置の別画面。
+- ブラウザー単体: 共有AudioContextで離散L/R再生と選択入力の録音、Web WorkerでESS逆畳み込み・減衰解析。入力プレビューは保存せず、暗騒音は応答とは別の`AmbientObservation`に保存する。
+- iOS SwiftUI/WKWebView: 同じHTTPS Web画面をアプリ内で開き、マイク権限を管理する。PCM収録・保存・解析はWeb側が行い、サイトと異なるマイク要求を拒否する。
+- Mac Swift: AVR接続補助、CoreAudio機器の診断、Accelerate DSP、クラウド解析ワーカー。認証セッションはKeychain。既存のローカル録音CLIは移行完了まで互換用として残す。
+- tvOS SwiftUI: AVPlayerによる事前取得素材の再生、端末登録、準備応答、停止監視。素材manifestにStereo / Multi Ch In / Dolby Atmosの申告形式を持たせ、Webでの検証記録とTV準備表示で照合する。Xcodeプロジェクトを同梱。
 - Supabase: オーナーOTP認証、匿名端末を期限付きコードで登録、RLS、非公開Storage、Realtime通知、永続コマンドと解析キュー。
 
 ## 測定の状態と再試行
@@ -24,6 +26,10 @@ Storageファイルの存在・長さをDBで検証し、Macがさらに全チ�
 TVは再生素材だけ読み取れ、マイク原音・解析ジョブは読めない。登録解除で端末のコマンド・リース・所属権限を失効させる。Storageは非公開で、ワークスペース/アーティファクトごとのパスとRLSを要求する。
 
 ## バックアップ
+
+- IndexedDB v2は既存ストアを維持して`observations`を追加。バックアップdata v2へ環境音を含め、復元はv1/v2を受け入れる。ハッシュmanifestはv1を維持する。
+- ローカルESSの`AnalysisResult`はschemaVersion 1/source sweepのまま、`localCaptureId`で原音を参照する。未アップロード原音の`rawArtifactId`はnull。入力機器・チャンネル・ブラウザー報告レート・出力経路は任意メタデータとして旧データと共存する。
+- `LocalCapture.purpose`と`analysisOwner`で原音の用途・解析担当を識別する。暗騒音、手動録音、ブラウザー解析の原音は`syncCapture`でも拒否する。既存クラウドのcapture確定がスイープ解析を自動起動するため、用途の違う原音をそこへ送らない。既存クラウド測定はsweep/cloudを明記する。
 
 - WebのZIPは「このブラウザーにある」結果・原音・ログ。クラウド全体のバックアップではない。復元前に全ハッシュを確認する。既存IDを上書きしない。
 - Mac `backup`は呼び出し元に見えるDB行と確定済みStorageオブジェクトを保存する。Keychain認証情報・Authユーザー・他の端末の制限付き行を含まない。`verify-backup`でハッシュを確認する。

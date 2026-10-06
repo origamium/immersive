@@ -1,0 +1,125 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {};
+	objectVersion = 56;
+	objects = {
+		A10000000000000000000001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = { LastUpgradeCheck = 2600; };
+			buildConfigurationList = A10000000000000000000002;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			knownRegions = (en, ja, Base);
+			mainGroup = A10000000000000000000003;
+			productRefGroup = A10000000000000000000004;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (A10000000000000000000005);
+		};
+		A10000000000000000000002 /* Project configuration list */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (A10000000000000000000010, A10000000000000000000011);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A10000000000000000000003 /* Main group */ = {
+			isa = PBXGroup;
+			children = (A10000000000000000000006, A10000000000000000000007, A10000000000000000000004);
+			sourceTree = "<group>";
+		};
+		A10000000000000000000004 /* Products */ = {
+			isa = PBXGroup;
+			children = (A10000000000000000000008);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		A10000000000000000000005 /* AcousticIOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A10000000000000000000012;
+			buildPhases = (A10000000000000000000015, A10000000000000000000016, A10000000000000000000017);
+			buildRules = ();
+			dependencies = ();
+			name = AcousticIOS;
+			productName = AcousticIOS;
+			productReference = A10000000000000000000008;
+			productType = "com.apple.product-type.application";
+		};
+		A10000000000000000000006 /* AcousticIOSApp.swift */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = AcousticIOSApp.swift;
+			sourceTree = "<group>";
+		};
+		A10000000000000000000007 /* Info.plist */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = text.plist.xml;
+			path = Info.plist;
+			sourceTree = "<group>";
+		};
+		A10000000000000000000008 /* AcousticIOS.app */ = {
+			isa = PBXFileReference;
+			explicitFileType = wrapper.application;
+			includeInIndex = 0;
+			path = AcousticIOS.app;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		A10000000000000000000009 /* AcousticIOSApp.swift in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = A10000000000000000000006;
+		};
+		A10000000000000000000010 /* Debug project settings */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = { CLANG_ENABLE_MODULES = YES; SDKROOT = iphoneos; SWIFT_VERSION = 5.0; IPHONEOS_DEPLOYMENT_TARGET = 17.0; };
+			name = Debug;
+		};
+		A10000000000000000000011 /* Release project settings */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = { CLANG_ENABLE_MODULES = YES; SDKROOT = iphoneos; SWIFT_VERSION = 5.0; IPHONEOS_DEPLOYMENT_TARGET = 17.0; };
+			name = Release;
+		};
+		A10000000000000000000012 /* AcousticIOS build settings */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (A10000000000000000000013, A10000000000000000000014);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A10000000000000000000013 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Info.plist;
+				PRODUCT_BUNDLE_IDENTIFIER = app.immersive.acoustic.ios;
+				PRODUCT_NAME = AcousticIOS;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		A10000000000000000000014 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Info.plist;
+				PRODUCT_BUNDLE_IDENTIFIER = app.immersive.acoustic.ios;
+				PRODUCT_NAME = AcousticIOS;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		A10000000000000000000015 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (A10000000000000000000009);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A10000000000000000000016 /* Frameworks */ = { isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+		A10000000000000000000017 /* Resources */ = { isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+	};
+	rootObject = A10000000000000000000001;
+}

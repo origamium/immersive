@@ -23,6 +23,9 @@ func makeResult(_ dsp:DSPResult,context:[String:Any],session:String,artifact:Str
     let processing=dictionary(context["processing"]),processingOff=["echoCancellation","autoGainControl","noiseSuppression"].allSatisfy{processing[$0] as? Bool==false}
     if !processingOff {reasons.append("入力のAGC・ノイズ抑制・エコー除去が停止していることを確認できません")}
     if points.isEmpty {reasons.append("周波数校正なし: 相対評価")}
+    let microphone=(context["microphone"] as? String ?? "").uppercased().replacingOccurrences(of:" ",with:"")
+    let sm58=context["microphoneProfile"] as? String=="sm58" || microphone.contains("SM58")
+    if sm58 {reasons.append("SM58は単一指向性のボーカル用マイク: 向き・ゲインを固定した参考測定。50 Hz未満／15 kHz超は仕様範囲外です。")}
     if calibration["orientation"] as? String=="other" {reasons.append("校正ファイルとマイクの方向を未確認")}
     let reference=context["referenceSpeaker"] as? String
     let unverifiedAsset = dictionary(context["profile"])["route"] as? String=="apple-tv" && dictionary(dictionary(context["profile"])["settings"])["Asset mapping"] as? String != "verified"
@@ -38,7 +41,7 @@ func makeResult(_ dsp:DSPResult,context:[String:Any],session:String,artifact:Str
     let metadataKnown = (context["inputGain"] as? String).map{!$0.isEmpty && $0 != "未確認"} ?? false
     let avrUnknown = (dictionary(avrObservation["before"])["unknownConditions"] as? [String] ?? [])
     if !avrUnknown.isEmpty {reasons.append("AVRに未確認条件があります: "+avrUnknown.joined(separator:" / "))}
-    let verified = avrUnknown.isEmpty && !invalid && !unverifiedAsset && source=="sweep" && !points.isEmpty && covered && processingOff && metadataKnown && calibration["orientation"] as? String != "other"
+    let verified = !sm58 && avrUnknown.isEmpty && !invalid && !unverifiedAsset && source=="sweep" && !points.isEmpty && covered && processingOff && metadataKnown && calibration["orientation"] as? String != "other"
     var display=[[String:Any]]();let strideSize=max(1,dsp.impulse.count/4000)
     for start in stride(from:0,to:dsp.impulse.count,by:strideSize) {let end=min(dsp.impulse.count,start+strideSize);let peak=(start..<end).max{abs(dsp.impulse[$0])<abs(dsp.impulse[$1])}!;display.append(["seconds":Double(peak)/sampleRate+dsp.timeOriginSeconds,"value":dsp.impulse[peak]])}
     let speaker=context["speakerId"] as? String ?? "IR",date=ISO8601DateFormatter().string(from:Date())

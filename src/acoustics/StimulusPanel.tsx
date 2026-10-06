@@ -3,6 +3,25 @@ import { useState } from "react";
 import { uploadFile } from "./cloud";
 import { download } from "./export";
 import type { MeasurementContext } from "./types";
+
+const mediaProfiles = [
+  {
+    value: "stereo",
+    label: "Stereo",
+    detail: "2ch PCM / AAC",
+  },
+  {
+    value: "multiCh",
+    label: "Multi Ch In",
+    detail: "AVPlayer対応のマルチチャンネルPCM / Apple Lossless素材",
+  },
+  {
+    value: "dolbyAtmos",
+    label: "Dolby Atmos",
+    detail: "Dolby Digital Plus JOC (E-AC-3)等の対応素材",
+  },
+] as const;
+
 export function StimulusPanel({
   client,
   workspace,
@@ -21,6 +40,9 @@ export function StimulusPanel({
   const [asset, setAsset] = useState(""),
     [method, setMethod] = useState(""),
     [route, setRoute] = useState(""),
+    [mediaProfile, setMediaProfile] =
+      useState<(typeof mediaProfiles)[number]["value"]>("stereo"),
+    [uploadedMediaProfile, setUploadedMediaProfile] = useState(""),
     [markers, setMarkers] = useState(false),
     [status, setStatus] = useState("");
   return (
@@ -29,6 +51,24 @@ export function StimulusPanel({
       <p className="muted">
         選択中の {context.speakerId}{" "}
         に対応するテスト素材を登録します。作成時のスイープ設定・基準スピーカーを一致させてください。有料コーデックや外部素材は同梱しません。
+      </p>
+      <label>
+        音源形式
+        <select
+          value={mediaProfile}
+          onChange={(e) =>
+            setMediaProfile(e.target.value as typeof mediaProfile)
+          }
+        >
+          {mediaProfiles.map((profile) => (
+            <option key={profile.value} value={profile.value}>
+              {profile.label} — {profile.detail}
+            </option>
+          ))}
+        </select>
+      </label>
+      <p className="muted">
+        形式は登録者の申告です。再生経路と実際のチャンネル分離を確認してから検証済みにします。
       </p>
       <div className="actions">
         <button
@@ -61,11 +101,13 @@ export function StimulusPanel({
                     "stimulus",
                     url,
                     publicKey,
-                    (p) => setStatus(`保存中 ${p.toFixed(0)}%`)
+                    (p) => setStatus(`保存中 ${p.toFixed(0)}%`),
+                    mediaProfile
                   );
                   setAsset(id);
+                  setUploadedMediaProfile(mediaProfile);
                   setStatus(
-                    "素材を登録しました。測定画面の検証モードで割り当てを確認してください。"
+                    `${mediaProfiles.find((x) => x.value === mediaProfile)?.label}素材を登録しました。測定画面の検証モードで割り当てを確認してください。`
                   );
                 });
             }}
@@ -74,7 +116,13 @@ export function StimulusPanel({
       </div>
       <label>
         アセットID
-        <input value={asset} onChange={(e) => setAsset(e.target.value)} />
+        <input
+          value={asset}
+          onChange={(e) => {
+            setAsset(e.target.value);
+            setUploadedMediaProfile("");
+          }}
+        />
       </label>
       <label>
         検証した経路・設定
@@ -120,6 +168,7 @@ export function StimulusPanel({
                 method,
                 route,
                 markersVerified: markers,
+                mediaProfile: uploadedMediaProfile || mediaProfile,
               },
             });
             if (error) throw error;

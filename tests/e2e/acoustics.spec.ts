@@ -9,6 +9,9 @@ test("records durable PCM and exports a consistent WAV using a synthetic microph
     "Synthetic microphone flags are Chromium-specific"
   );
   await page.goto("/");
+  await page
+    .getByRole("button", { name: "Mac／Apple TV連携", exact: true })
+    .click();
   await page.getByText("手動で原音だけを収録", { exact: true }).click();
   await page
     .getByRole("button", { name: "原音の収録を開始", exact: true })
@@ -21,6 +24,35 @@ test("records durable PCM and exports a consistent WAV using a synthetic microph
       timeout: 10000,
     })
     .not.toBe("-80");
+  // The live meter updates before the first durable PCM chunk is flushed.
+  await expect
+    .poll(
+      () =>
+        page.evaluate(
+          () =>
+            new Promise<number>((resolve, reject) => {
+              const open = indexedDB.open("immersive-acoustics-v1", 2);
+              open.onerror = () => reject(open.error);
+              open.onsuccess = () => {
+                const db = open.result;
+                const request = db
+                  .transaction("captures")
+                  .objectStore("captures")
+                  .getAll();
+                request.onsuccess = () => {
+                  db.close();
+                  resolve(request.result[0]?.frames ?? 0);
+                };
+                request.onerror = () => {
+                  db.close();
+                  reject(request.error);
+                };
+              };
+            })
+        ),
+      { timeout: 10000 }
+    )
+    .toBeGreaterThan(32768);
   await page.getByRole("button", { name: "■ 測定を停止" }).click();
   await expect(page.getByText("原音を端末に保存しました")).toBeVisible();
   await page.getByRole("button", { name: /比較・履歴/ }).click();
@@ -117,13 +149,23 @@ test("rejects malformed responses and never fabricates measurements", async ({
   ).toBeVisible();
 });
 
-test("AVR tab explains Mac setup without inventing a connected receiver", async ({ page }) => {
+test("AVR tab explains Mac setup without inventing a connected receiver", async ({
+  page,
+}) => {
   const errors: string[] = [];
-  page.on("pageerror", error => errors.push(error.message));
+  page.on("pageerror", (error) => errors.push(error.message));
   await page.goto("/");
   await page.getByRole("button", { name: /AVR/, exact: false }).click();
-  await expect(page.getByRole("heading", { name: "AVR Control" })).toBeVisible();
-  await expect(page.getByText(/Mac Companionの「AVR \/ HomeKit」/)).toBeVisible();
-  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  await expect(
+    page.getByRole("heading", { name: "AVR Control" })
+  ).toBeVisible();
+  await expect(
+    page.getByText(/Mac Companionの「AVR \/ HomeKit」/)
+  ).toBeVisible();
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= window.innerWidth
+    )
+  ).toBe(true);
   expect(errors).toEqual([]);
 });

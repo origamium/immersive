@@ -2,3 +2,118 @@
 .acoustic-app .checkbox-label{display:flex;align-items:center;gap:10px}.acoustic-app .checkbox-label input{width:18px;min-height:18px;margin:0}.acoustic-app meter.level-meter{display:block;width:100%;height:8px}.acoustic-app meter::-webkit-meter-bar{background:#34483b;border:0}.acoustic-app meter::-webkit-meter-optimum-value{background:#62e3c3}.acoustic-app meter::-moz-meter-bar{background:#62e3c3}
 
 @media(max-width:650px){.acoustic-app{padding-bottom:calc(68px + env(safe-area-inset-bottom))}.acoustic-app .sidebar{height:calc(65px + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom)}.acoustic-app .sidebar nav{height:65px}.acoustic-app .topbar{padding-top:env(safe-area-inset-top);height:calc(54px + env(safe-area-inset-top))}}
+
+.measurement-method{margin-bottom:24px}.acoustic-app .measurement-method [aria-pressed=true]{border-color:#62e3c3;background:#244235;color:#c7f6e1}.browser-measurement{grid-template-columns:1fr 1.15fr}.browser-measurement .status{display:block;margin-top:14px;min-height:40px}.browser-measurement .ambient-button{margin-top:12px;width:100%}.microphone-note strong{color:#ffcf99}.position-fields{grid-template-columns:repeat(3,minmax(0,1fr))}.browser-measurement select{max-width:100%;text-overflow:ellipsis}.browser-measurement .note{font-size:11px}.browser-measurement .alert{overflow-wrap:anywhere}@media(max-width:850px){.browser-measurement{grid-template-columns:1fr}.browser-measurement .panel{min-width:0}}
+.acoustic-app fieldset.measurement-method{padding:0;border:0;margin-inline:0;min-width:0}
+
+/* Instrument-console finish: ink, graphite and restrained champagne accents. */
+.acoustic-app {
+  --bg: #0a0e13;
+  --panel: #111821;
+  --line: #29333f;
+  --muted: #9ba7b4;
+  --text: #eef0f3;
+  --accent: #d8bd82;
+  background:
+    radial-gradient(ellipse at 77% 0%, rgb(117 99 61 / 11%), transparent 34rem),
+    radial-gradient(ellipse at 0% 45%, rgb(57 80 96 / 9%), transparent 40rem),
+    var(--bg);
+  letter-spacing: 0.012em;
+}
+
+.acoustic-app .sidebar {
+  background: linear-gradient(180deg, rgb(17 24 32 / 98%), rgb(12 17 23 / 99%));
+  border-right-color: #28323d;
+  box-shadow: 10px 0 34px rgb(0 0 0 / 14%);
+  padding-top: 34px;
+}
+
+.acoustic-app .brand { color: #f4f0e7; letter-spacing: 0.19em; }
+.acoustic-app .brand-mark { color: #ddc58e; text-shadow: 0 0 26px rgb(214 185 121 / 30%); }
+.acoustic-app .brand small { color: #a59a81; }
+.acoustic-app .sidebar nav { gap: 5px; margin-top: 58px; }
+
+.acoustic-app .sidebar nav button {
+  position: relative;
+  border-radius: 9px;
+  color: #a6b0bc;
+  transition: background-color 160ms ease, color 160ms ease;
+}
+
+.acoustic-app .sidebar nav button:hover:not(.active) { background: rgb(255 255 255 / 4%); color: #e2e5e9; }
+.acoustic-app .sidebar nav button.active { background: linear-gradient(100deg, rgb(207 178 117 / 15%), rgb(207 178 117 / 4%)); color: #e2c990; }
+.acoustic-app .sidebar nav button.active::before { position: absolute; left: 0; top: 25%; bottom: 25%; width: 2px; border-radius: 2px; background: #d7bb7c; content: ""; }
+.acoustic-app .nav-icon { color: inherit; font-size: 20px; }
+.acoustic-app .connection-dot.online { background: #93d6bb; box-shadow: 0 0 10px rgb(117 213 177 / 55%); }
+
+.acoustic-app .topbar { border-bottom-color: rgb(123 138 154 / 16%); color: #9ba7b4; padding-right: 330px; backdrop-filter: blur(12px); }
+.acoustic-app main { max-width: 1480px; padding-top: 48px; }
+.acoustic-app h1, .acoustic-app h2, .acoustic-app h3 { color: #f1f1ef; text-wrap: balance; }
+.acoustic-app h1 { font-size: clamp(28px, 2.4vw, 35px); font-weight: 450; letter-spacing: 0.035em; }
+.acoustic-app h2 { letter-spacing: 0.015em; }
+.acoustic-app .eyebrow { color: #cbb17a; letter-spacing: 0.23em; }
+.acoustic-app .section-heading { margin-bottom: 32px; }
+.acoustic-app .section-heading > div > p:last-child { max-width: 38rem; color: #9ba7b4; }
+
+.acoustic-app .badge { border-color: rgb(201 174 116 / 31%); background: linear-gradient(135deg, rgb(163 136 82 / 17%), rgb(163 136 82 / 7%)); color: #e4d3a7; padding: 7px 13px; letter-spacing: 0.035em; }
+.acoustic-app .panel { position: relative; overflow: hidden; border-color: #2a3541; border-radius: 15px; background: linear-gradient(145deg, rgb(20 29 39 / 97%), rgb(15 22 30 / 98%)); box-shadow: 0 18px 44px rgb(0 0 0 / 17%), inset 0 1px rgb(255 255 255 / 2.5%); padding: 27px; }
+.acoustic-app .measurement-grid { grid-template-columns: minmax(0, 1.18fr) minmax(350px, 0.92fr); gap: 22px; }
+.acoustic-app .speaker-panel { background: radial-gradient(ellipse at 50% 43%, rgb(79 99 105 / 13%), transparent 48%), linear-gradient(145deg, #141d26, #10171e 75%); }
+.acoustic-app .speaker-map { border-color: #34414d; border-radius: 14px; background: linear-gradient(90deg, transparent 49.8%, rgb(192 169 120 / 21%) 50%, transparent 50.2%), linear-gradient(transparent 49.8%, rgb(192 169 120 / 21%) 50%, transparent 50.2%), radial-gradient(ellipse at 50% 52%, rgb(105 131 133 / 9%), transparent 56%), #0d141a; box-shadow: inset 0 0 48px rgb(0 0 0 / 23%); }
+.acoustic-app .screen-line { border-color: #9c875b; color: #a8956c; }
+.acoustic-app .speaker { border-color: #665941; background: #25251f; color: #ead8ad; box-shadow: 0 5px 14px rgb(0 0 0 / 25%); }
+.acoustic-app .speaker small { color: #a49676; }
+.acoustic-app .speaker.height { border-color: #786745; background: #28251e; color: #e8cf98; }
+.acoustic-app .speaker.selected { border-color: #ead29b; background: linear-gradient(145deg, #ead8ad, #c3a970); color: #211c12; box-shadow: 0 0 0 3px rgb(213 187 128 / 14%), 0 0 22px rgb(207 177 111 / 22%); }
+.acoustic-app .speaker.selected small { color: #62502c; }
+.acoustic-app .listener-symbol { color: #b6c3c5; filter: drop-shadow(0 0 9px rgb(162 197 194 / 36%)); }
+
+.acoustic-app .stats { border-color: #303b47; }
+.acoustic-app .stats dt { color: #99a5b1; letter-spacing: 0.12em; }
+.acoustic-app .stats dd { color: #efe5cb; font-variant-numeric: tabular-nums; }
+.acoustic-app button, .acoustic-app .file-button { border-color: #46515d; border-radius: 9px; background: linear-gradient(180deg, #202a34, #1a232c); color: #e6e8eb; transition: background-color 160ms ease, border-color 160ms ease, transform 160ms ease, box-shadow 160ms ease; }
+.acoustic-app button:hover:not(:disabled), .acoustic-app .file-button:hover { border-color: #a9905e; background: linear-gradient(180deg, #303943, #252e37); box-shadow: 0 5px 18px rgb(0 0 0 / 22%); transform: translateY(-1px); }
+.acoustic-app input, .acoustic-app select, .acoustic-app textarea { border-color: #3a4653; border-radius: 8px; background-color: #0d141b; color: #f0f1f2; accent-color: #d6bb7d; }
+.acoustic-app input:hover, .acoustic-app select:hover, .acoustic-app textarea:hover { border-color: #667381; }
+.acoustic-app .primary { border: 1px solid #d9c18a; background: linear-gradient(135deg, #e3d09f, #c4a768); box-shadow: 0 7px 22px rgb(180 147 78 / 18%); color: #201b11; letter-spacing: 0.035em; }
+.acoustic-app .primary:hover:not(:disabled) { background: linear-gradient(135deg, #f0dfb3, #d2b477); }
+.acoustic-app .danger { border-color: #d17c6f; background: linear-gradient(135deg, #bf6658, #91463e); color: white; }
+.acoustic-app .note { border: 1px solid rgb(203 177 122 / 20%); border-left: 3px solid #cbb17a; border-radius: 8px; background: linear-gradient(100deg, rgb(172 143 87 / 12%), rgb(172 143 87 / 4%)); color: #d5c9ab; line-height: 1.8; }
+.acoustic-app .status { color: #c5d2d0; font-variant-numeric: tabular-nums; }
+.acoustic-app .level-meter i, .acoustic-app meter::-webkit-meter-optimum-value, .acoustic-app meter::-moz-meter-bar { background: linear-gradient(90deg, #83cbb2, #c8b579); }
+.acoustic-app .level-meter { background: #303b43; }
+.acoustic-app .chart line { stroke: #35414c; }
+.acoustic-app .chart text { fill: #a8b2bc; }
+.acoustic-app th { color: #b7c0c8; }
+.acoustic-app td, .acoustic-app th, .acoustic-app .pattern-row, .acoustic-app .capture-row, .acoustic-app .device { border-color: #2b3641; }
+.acoustic-app .pattern-row strong, .acoustic-app a, .acoustic-app .text-button { color: #ddc68f; }
+.acoustic-app .empty { color: #9ba7b4; }
+.acoustic-app .alert { border-color: #89564d; background: #2a1d1d; }
+.acoustic-app :focus-visible { outline-color: #e0c78b; }
+.acoustic-app footer { color: #858e98; }
+
+@media (max-width: 1150px) {
+  .acoustic-app .topbar { padding-right: 28px; }
+  .acoustic-app .topbar > .muted { display: none; }
+  .acoustic-app .measurement-grid { grid-template-columns: minmax(0, 1fr) minmax(310px, 0.95fr); }
+}
+
+@media (max-width: 850px) {
+  .acoustic-app .measurement-grid { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 650px) {
+  .acoustic-app main { padding: 76px 17px 25px; }
+  .acoustic-app .topbar { padding-right: 20px; }
+  .acoustic-app .sidebar { background: rgb(13 19 26 / 96%); }
+  .acoustic-app .sidebar nav button.active { background: transparent; }
+  .acoustic-app .sidebar nav button.active::before { top: 0; right: 27%; bottom: auto; left: 27%; width: auto; height: 2px; }
+  .acoustic-app .measurement-grid { grid-template-columns: 1fr; }
+  .acoustic-app .panel { border-radius: 13px; }
+  .acoustic-app .section-heading { margin-bottom: 24px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .acoustic-app button, .acoustic-app .file-button, .acoustic-app .sidebar nav button { transition: none; }
+  .acoustic-app button:hover:not(:disabled) { transform: none; }
+}
